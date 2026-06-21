@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import '../main.dart'; 
 import '../models/board_game.dart';
+import 'match_sessions_screen.dart';
 
 class GameListScreen extends StatefulWidget {
   const GameListScreen({super.key});
@@ -200,6 +201,14 @@ class _GameListScreenState extends State<GameListScreen> {
                       ),
                     ],
                   ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MatchSessionsScreen(game: game),
+                      ),
+                    );
+                  },
                 ),
               );
             },
