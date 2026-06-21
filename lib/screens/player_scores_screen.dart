@@ -530,9 +530,22 @@ void _showPlayerHistorySheet(PlayerSession player, int playerIndexInDatabase) {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(currentMatchSession.name ?? 'Match Scores'),
-        backgroundColor: Colors.teal,
-        foregroundColor: Colors.white,
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(currentMatchSession.name ?? 'Match Scores'),
+            const SizedBox(height: 2), // Tiny spacer between lines
+            Text(
+              _game?.name ?? 'Board game',
+              style: TextStyle(
+                fontSize: 13, 
+                fontWeight: FontWeight.w400,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), // Fades out the subtitle nicely
+              ),
+            ),
+          ],
+        ),
         actions: [
           if (basePlayers.isNotEmpty)
             IconButton(

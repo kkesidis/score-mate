@@ -30,11 +30,35 @@ class ScoreMateApp extends StatelessWidget {
     return MaterialApp(
       title: 'ScoreMate',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
-        useMaterial3: true,
-      ),
       home: const GameListScreen(),
+      themeMode: ThemeMode.dark,
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF121212),
+        colorScheme: ColorScheme.dark(
+          surface: const Color(0xFF121212),       // Deep canvas background
+          primary: const Color(0xFF00E676),      // Neon Emerald green accents
+          secondary: const Color(0xFF263238),    // Dark Blue-Grey panels
+          error: Colors.redAccent,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          titleTextStyle: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        cardTheme: CardThemeData(  // FIX: Changed CardTheme to CardThemeData
+          color: const Color(0xFF1E1E1E), // (or Colors.white depending on the theme chosen)
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: Color(0xFF00E676),
+          foregroundColor: Color(0xFF121212),
+          shape: CircleBorder(),
+        ),
+      ),
     );
   }
 }

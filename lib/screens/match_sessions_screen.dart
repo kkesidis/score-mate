@@ -188,9 +188,22 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${_currentGame.name} - Sessions'),
-        backgroundColor: Colors.teal,
-        foregroundColor: Colors.white,
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Sessions'),
+            const SizedBox(height: 2), // Tiny spacer between lines
+            Text(
+              _currentGame.name,
+              style: TextStyle(
+                fontSize: 13, 
+                fontWeight: FontWeight.w400,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), // Fades out the subtitle nicely
+              ),
+            ),
+          ],
+        ),
       ),
       body: sessions.isEmpty
           ? const Center(

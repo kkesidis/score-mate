@@ -159,9 +159,7 @@ class _GameListScreenState extends State<GameListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ScoreMate - Board Games'),
-        backgroundColor: Colors.teal,
-        foregroundColor: Colors.white,
+        title: const Text('ScoreMate'),
       ),
       body: _games.isEmpty
         ? const Center(child: Text('No games added yet. Tap + to begin!'))
