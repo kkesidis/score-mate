@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:isar/isar.dart';
+import '../main.dart'; // Imports the global 'isar' instance
 import '../models/board_game.dart';
 
 class GameListScreen extends StatefulWidget {
@@ -9,13 +11,29 @@ class GameListScreen extends StatefulWidget {
 }
 
 class _GameListScreenState extends State<GameListScreen> {
-  // Temporary fake data to test our UI design
-  final List<BoardGame> _mockGames = [
-    BoardGame()
-      ..name = 'Catan'
-      ..description = 'Build settlements and trade resources.'
-      ..highestScoreWins = true,
-  ];
+  List<BoardGame> _games = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _readGamesFromDatabase();
+    _listenToDatabaseChanges();
+  }
+
+  // Fetch all board games currently saved in Isar
+  void _readGamesFromDatabase() async {
+    final allGames = await isar.boardGames.where().findAll();
+    setState(() {
+      _games = allGames;
+    });
+  }
+
+  // Automatically refresh the screen whenever the database changes
+  void _listenToDatabaseChanges() {
+    isar.boardGames.watchLazy().listen((_) {
+      _readGamesFromDatabase();
+    });
+  }
 
   void _showAddGameDialog() {
     final nameController = TextEditingController();
@@ -43,9 +61,7 @@ class _GameListScreenState extends State<GameListScreen> {
                     const SizedBox(height: 10),
                     TextField(
                       controller: descController,
-                      decoration: const InputDecoration(
-                        labelText: 'Description (Optional)',
-                      ),
+                      decoration: const InputDecoration(labelText: 'Description (Optional)'),
                     ),
                     const SizedBox(height: 15),
                     SwitchListTile(
@@ -67,7 +83,7 @@ class _GameListScreenState extends State<GameListScreen> {
                   child: const Text('Cancel'),
                 ),
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (nameController.text.trim().isEmpty) return;
 
                     final newGame = BoardGame()
@@ -75,11 +91,12 @@ class _GameListScreenState extends State<GameListScreen> {
                       ..description = descController.text.trim().isEmpty ? null : descController.text.trim()
                       ..highestScoreWins = highestWins;
 
-                    setState(() {
-                      _mockGames.add(newGame);
+                    // WRITE TO ISAR: Transactions must run inside isar.writeTxn
+                    await isar.writeTxn(() async {
+                      await isar.boardGames.put(newGame);
                     });
 
-                    Navigator.pop(context);
+                    if (context.mounted) Navigator.pop(context);
                   },
                   child: const Text('Add'),
                 ),
@@ -99,14 +116,12 @@ class _GameListScreenState extends State<GameListScreen> {
         backgroundColor: Colors.teal,
         foregroundColor: Colors.white,
       ),
-      body: _mockGames.isEmpty
-          ? const Center(
-              child: Text('No games added yet. Tap + to begin!'),
-            )
+      body: _games.isEmpty
+          ? const Center(child: Text('No games added yet. Tap + to begin!'))
           : ListView.builder(
-              itemCount: _mockGames.length,
+              itemCount: _games.length,
               itemBuilder: (context, index) {
-                final game = _mockGames[index];
+                final game = _games[index];
                 return Card(
                   margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   child: ListTile(
