@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import '../main.dart'; // Imports our global 'isar' instance
 import '../models/board_game.dart';
+import 'player_scores_screen.dart';
 
 class MatchSessionsScreen extends StatefulWidget {
   final BoardGame game;
@@ -237,7 +238,16 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                     ],
                   ),
                   onTap: () {
-                    // Future home of checking players/scores!
+                    // Navigate to player scores screen passing database identifiers
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PlayerScoresScreen(
+                          gameId: _currentGame.id,
+                          sessionIndex: reversedIndex, // The true un-reversed index spot of this session
+                        ),
+                      ),
+                    );
                   },
                 ),
               );
