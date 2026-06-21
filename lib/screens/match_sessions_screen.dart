@@ -90,6 +90,96 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
     );
   }
 
+  // 1. EDIT DIALOG: Pre-fills with the selected match name to let users rename it
+  void _showEditSessionDialog(int actualIndex) {
+    final nameController = TextEditingController();
+    final session = _currentGame.sessions[actualIndex];
+    nameController.text = session.name ?? '';
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Rename Match Session'),
+          content: TextField(
+            controller: nameController,
+            decoration: const InputDecoration(labelText: 'Session Name'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (nameController.text.trim().isEmpty) return;
+
+                // Grab the list, update the name at this index slot, then pass it back
+                final updatedSessions = _currentGame.sessions.toList();
+                updatedSessions[actualIndex].name = nameController.text.trim();
+                _currentGame.sessions = updatedSessions;
+
+                await isar.writeTxn(() async {
+                  await isar.boardGames.put(_currentGame);
+                });
+
+                if (context.mounted) Navigator.pop(context);
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // 2. DELETE CONFIRMATION BARRIER
+  void _showDeleteConfirmationDialog(int actualIndex, String sessionName) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Match Session'),
+          content: Text('Are you sure you want to delete "$sessionName"? This will erase all player scores for this match.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {
+                _deleteSession(actualIndex);
+                Navigator.pop(context);
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // 3. ACTUAL ISAR DELETE TRANSACTION
+  void _deleteSession(int actualIndex) async {
+    final updatedSessions = _currentGame.sessions.toList();
+    updatedSessions.removeAt(actualIndex); // Pull it out of the array slot
+    _currentGame.sessions = updatedSessions;
+
+    await isar.writeTxn(() async {
+      await isar.boardGames.put(_currentGame);
+    });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Match session removed')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Read the list from our dynamically updated local game variable
@@ -126,7 +216,26 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                 child: ListTile(
                   title: Text(sessionName, style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Text('Played on: $sessionDate'),
-                  trailing: const Icon(Icons.chevron_right),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined, color: Colors.teal),
+                        tooltip: 'Rename Session',
+                        onPressed: () {
+                          // Pass the true list index so we know exactly which one to modify
+                          _showEditSessionDialog(reversedIndex);
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                        tooltip: 'Delete Session',
+                        onPressed: () {
+                          _showDeleteConfirmationDialog(reversedIndex, sessionName);
+                        },
+                      ),
+                    ],
+                  ),
                   onTap: () {
                     // Future home of checking players/scores!
                   },
