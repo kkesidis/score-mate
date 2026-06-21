@@ -116,6 +116,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
             children: [
               TextField(
                 controller: scoreController,
+                autofocus: true,
                 decoration: const InputDecoration(
                   labelText: 'Points to Add',
                   hintText: 'e.g., 10 or -2',
@@ -230,68 +231,215 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
     }
   }
 
-  void _showPlayerHistorySheet(PlayerSession player) {
+void _showPlayerHistorySheet(PlayerSession player, int playerIndexInDatabase) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true, // Allows the sheet to resize when keyboards push up
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        final scores = player.scores;
+        // StatefulBuilder allows the bottom sheet content to refresh in real-time 
+        // when a single entry is edited or deleted without closing the sheet!
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setSheetState) {
+            if (_game == null) return const SizedBox.shrink();
+            
+            // Re-fetch the fresh live player instance from our synced state
+            final currentMatch = _game!.sessions[widget.sessionIndex];
+            final livePlayer = currentMatch.players![playerIndexInDatabase];
+            final scores = livePlayer.scores;
 
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "${player.playerName}'s Score Log",
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
+            return Padding(
+              padding: EdgeInsets.only(
+                top: 16.0,
+                left: 16.0,
+                right: 16.0,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16.0, // Keyboard safety
               ),
-              const SizedBox(height: 10),
-              scores.isEmpty
-                  ? const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20),
-                      child: Center(child: Text('No scores logged yet for this match.')),
-                    )
-                  : Flexible(
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: scores.length,
-                      itemBuilder: (context, index) {
-                        // REVERSE ORDER LOGIC:
-                        // Counts backwards from the last item to the first
-                        final reversedIndex = scores.length - 1 - index;
-                        final entry = scores[reversedIndex];
-                        
-                        final valueString = (entry.value ?? 0) >= 0 
-                            ? '+${entry.value}' 
-                            : '${entry.value}';
-
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: (entry.value ?? 0) >= 0 ? Colors.teal.shade50 : Colors.red.shade50,
-                            child: Text(
-                              'R${reversedIndex + 1}', // Keeps the original round number label correct
-                              style: TextStyle(color: Colors.teal.shade900, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          title: Text(
-                            '$valueString points',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Text(entry.description ?? 'No note provided.'),
-                        );
-                      },
-                    ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "${livePlayer.playerName}'s Score Log",
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
                   ),
-              const SizedBox(height: 10),
-            ],
-          ),
+                  const SizedBox(height: 10),
+                  scores.isEmpty
+                      ? const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 20),
+                          child: Center(child: Text('No scores logged yet for this match.')),
+                        )
+                      : Flexible(
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: scores.length,
+                            itemBuilder: (context, index) {
+                              final reversedIndex = scores.length - 1 - index;
+                              final entry = scores[reversedIndex];
+                              
+                              final valueString = (entry.value ?? 0) >= 0 
+                                  ? '+${entry.value}' 
+                                  : '${entry.value}';
+
+                              return ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: (entry.value ?? 0) >= 0 ? Colors.teal.shade50 : Colors.red.shade50,
+                                  child: Text(
+                                    'R${reversedIndex + 1}',
+                                    style: TextStyle(color: Colors.teal.shade900, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                title: Text(
+                                  '$valueString points',
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                subtitle: Text(entry.description ?? 'No note provided.'),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // EDIT ENTRY BUTTON
+                                    IconButton(
+                                      icon: const Icon(Icons.edit_outlined, color: Colors.teal, size: 20),
+                                      onPressed: () {
+                                        _showEditScoreEntryInlineDialog(
+                                          playerIndexInDatabase, 
+                                          reversedIndex, 
+                                          entry,
+                                          setSheetState,
+                                        );
+                                      },
+                                    ),
+                                    // DELETE ENTRY BUTTON
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+                                      onPressed: () {
+                                        _deleteSingleScoreEntry(
+                                          playerIndexInDatabase, 
+                                          reversedIndex,
+                                          setSheetState,
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                  const SizedBox(height: 10),
+                ],
+              ),
+            );
+          }
         );
       },
     );
+  }
+
+  // Edits a single round entry inside a player's score log array
+  void _showEditScoreEntryInlineDialog(
+    int playerIdx, 
+    int scoreIdx, 
+    ScoreEntry entry, 
+    StateSetter setSheetState
+  ) {
+    final scoreController = TextEditingController(text: entry.value?.toString() ?? '0');
+    final descController = TextEditingController(text: entry.description ?? '');
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit Round Entry'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: scoreController,
+                autofocus: true,
+                decoration: const InputDecoration(labelText: 'Points'),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: descController,
+                decoration: const InputDecoration(labelText: 'Note'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (_game == null) return;
+                final parsedValue = int.tryParse(scoreController.text.trim()) ?? 0;
+
+                final sessionsList = _game!.sessions.toList();
+                final currentMatch = sessionsList[widget.sessionIndex];
+                final playersList = (currentMatch.players ?? <PlayerSession>[]).toList();
+                
+                final targetPlayer = playersList[playerIdx];
+                final updatedScores = targetPlayer.scores.toList();
+
+                // Mutate the entry at its historical position
+                updatedScores[scoreIdx] = ScoreEntry()
+                  ..value = parsedValue
+                  ..description = descController.text.trim().isEmpty ? null : descController.text.trim();
+
+                targetPlayer.scores = updatedScores;
+                playersList[playerIdx] = targetPlayer;
+                currentMatch.players = playersList;
+                sessionsList[widget.sessionIndex] = currentMatch;
+                _game!.sessions = sessionsList;
+
+                await isar.writeTxn(() async {
+                  await isar.boardGames.put(_game!);
+                });
+
+                // Update the sheet view state so the list changes instantly behind the dialog
+                setSheetState(() {}); 
+
+                if (context.mounted) Navigator.pop(context);
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Deletes a single specific round entry out of the player's list
+  void _deleteSingleScoreEntry(int playerIdx, int scoreIdx, StateSetter setSheetState) async {
+    if (_game == null) return;
+
+    final sessionsList = _game!.sessions.toList();
+    final currentMatch = sessionsList[widget.sessionIndex];
+    final playersList = (currentMatch.players ?? <PlayerSession>[]).toList();
+    
+    final targetPlayer = playersList[playerIdx];
+    final updatedScores = targetPlayer.scores.toList();
+
+    // Pull out just this specific round entry
+    updatedScores.removeAt(scoreIdx);
+
+    targetPlayer.scores = updatedScores;
+    playersList[playerIdx] = targetPlayer;
+    currentMatch.players = playersList;
+    sessionsList[widget.sessionIndex] = currentMatch;
+    _game!.sessions = sessionsList;
+
+    await isar.writeTxn(() async {
+      await isar.boardGames.put(_game!);
+    });
+
+    // Instantly refresh the bottom sheet log display
+    setSheetState(() {});
   }
 
   @override
@@ -367,7 +515,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                           icon: const Icon(Icons.history, color: Colors.blueGrey),
                           tooltip: 'View Score History',
                           onPressed: () {
-                            _showPlayerHistorySheet(playerSession);
+                            _showPlayerHistorySheet(playerSession, trueIndexInDatabase);
                           },
                         ),
                         IconButton(
