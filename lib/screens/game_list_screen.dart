@@ -15,11 +15,81 @@ class _GameListScreenState extends State<GameListScreen> {
       ..name = 'Catan'
       ..description = 'Build settlements and trade resources.'
       ..highestScoreWins = true,
-    BoardGame()
-      ..name = 'Golf'
-      ..description = 'Get the lowest score over 9 holes.'
-      ..highestScoreWins = false,
   ];
+
+  void _showAddGameDialog() {
+    final nameController = TextEditingController();
+    final descController = TextEditingController();
+    bool highestWins = true;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Add New Board Game'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Game Name *',
+                        hintText: 'e.g., Carcassonne',
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: descController,
+                      decoration: const InputDecoration(
+                        labelText: 'Description (Optional)',
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    SwitchListTile(
+                      title: const Text('Highest Score Wins'),
+                      subtitle: Text(highestWins ? 'Standard scoring' : 'Lowest score wins'),
+                      value: highestWins,
+                      onChanged: (bool value) {
+                        setDialogState(() {
+                          highestWins = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (nameController.text.trim().isEmpty) return;
+
+                    final newGame = BoardGame()
+                      ..name = nameController.text.trim()
+                      ..description = descController.text.trim().isEmpty ? null : descController.text.trim()
+                      ..highestScoreWins = highestWins;
+
+                    setState(() {
+                      _mockGames.add(newGame);
+                    });
+
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Add'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,12 +124,7 @@ class _GameListScreenState extends State<GameListScreen> {
               },
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: We will use this to show a popup form to add a game next!
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Add Game clicked!')),
-          );
-        },
+        onPressed: _showAddGameDialog,
         backgroundColor: Colors.teal,
         child: const Icon(Icons.add, color: Colors.white),
       ),
