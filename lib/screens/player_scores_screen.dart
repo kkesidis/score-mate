@@ -442,6 +442,70 @@ void _showPlayerHistorySheet(PlayerSession player, int playerIndexInDatabase) {
     setSheetState(() {});
   }
 
+  // Creates a fresh match session pre-populated with the current players
+  void _startRematch(List<PlayerSession> currentPlayers) async {
+    if (_game == null) return;
+
+    // 1. Extract player names from the current session
+    final existingNames = currentPlayers
+        .map((p) => p.playerName?.trim())
+        .where((name) => name != null && name.isNotEmpty)
+        .cast<String>()
+        .toList();
+
+    if (existingNames.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Add at least one player before starting a rematch!')),
+      );
+      return;
+    }
+
+    // 2. Prepare the new match session structures
+    final sessionsList = _game!.sessions.toList();
+    final nextMatchNumber = sessionsList.length + 1;
+
+    // Construct fresh clean player sheets with empty score arrays
+    final cleanRematchPlayers = existingNames.map((name) {
+      return PlayerSession()
+        ..playerName = name
+        ..scores = [];
+    }).toList();
+
+    final newMatchSession = MatchSession()
+      ..name = 'Match #$nextMatchNumber'
+      ..dateTime = DateTime.now()
+      ..players = cleanRematchPlayers;
+
+    // Isar expects items appended chronologically (newest at the end of the array)
+    sessionsList.add(newMatchSession);
+    _game!.sessions = sessionsList;
+
+    // 3. Commit to the database
+    await isar.writeTxn(() async {
+      await isar.boardGames.put(_game!);
+    });
+
+    if (!mounted) return;
+
+    // 4. NAVIGATION TRICK: Pop the current screen off the stack, and replace it
+    // with a brand new viewport targeted at the last index of the updated list!
+    final newSessionIndex = sessionsList.length - 1;
+    
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PlayerScoresScreen(
+          gameId: widget.gameId,
+          sessionIndex: newSessionIndex,
+        ),
+      ),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Started Match #$nextMatchNumber with existing players!')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_game == null) {
@@ -469,6 +533,14 @@ void _showPlayerHistorySheet(PlayerSession player, int playerIndexInDatabase) {
         title: Text(currentMatchSession.name ?? 'Match Scores'),
         backgroundColor: Colors.teal,
         foregroundColor: Colors.white,
+        actions: [
+          if (basePlayers.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.replay),
+              tooltip: 'Rematch (Same Players)',
+              onPressed: () => _startRematch(basePlayers),
+            ),
+        ],
       ),
       body: indexedPlayers.isEmpty
           ? const Center(child: Text('No players added yet. Tap + to add participants!'))
