@@ -169,44 +169,91 @@ class _GameListScreenState extends State<GameListScreen> {
               final game = _games[index];
               
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                child: ListTile(
-                  title: Text(game.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text(game.description ?? 'No description provided.'),
-                  // We stack our scoring direction icon AND our delete button side-by-side using a Row
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min, // Keep the row tightly packed
-                    children: [
-                      Icon(
-                        game.highestScoreWins ? Icons.arrow_upward : Icons.arrow_downward,
-                        color: game.highestScoreWins ? Colors.green : Colors.blue,
+                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      title: Text(
+                        game.name, 
+                        style: const TextStyle(fontWeight: FontWeight.bold)
                       ),
-                      const SizedBox(width: 8), // A little spacing between the icons
-                      IconButton(
-                        icon: const Icon(Icons.edit_outlined, color: Colors.teal),
-                        tooltip: 'Edit Game', // Displays a hint on desktop hover
-                        onPressed: () {
-                          _showGameDialog(existingGame: game); // Opens edit form
-                        },
+                      subtitle: Text(
+                        game.description ?? '-',
+                        style: const TextStyle(
+                          color: Colors.grey,
+                        ),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                        tooltip: 'Delete Game', // Displays a hint on desktop hover
-                        onPressed: () {
-                          // Trigger the confirmation alert box
-                          _showDeleteConfirmationDialog(game);
-                        },
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit_outlined, color: Colors.teal),
+                            tooltip: 'Edit Game',
+                            onPressed: () {
+                              _showGameDialog(existingGame: game);
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                            tooltip: 'Delete Game',
+                            onPressed: () {
+                              _showDeleteConfirmationDialog(game);
+                            },
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => MatchSessionsScreen(game: game),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MatchSessionsScreen(game: game),
+                          ),
+                        );
+                      },
+                    ),
+
+                    Divider(
+                      height: 1, 
+                      thickness: 0.5,
+                      color: Colors.teal.shade800,
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                      child: Row(
+                        children: [
+                          Text(
+                            '${game.sessions.length} matches played',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                            ),
+                          ),
+                          
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Text(
+                              '|',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+                              ),
+                            ),
+                          ),
+                          
+                          Text(
+                            game.highestScoreWins ? 'Highest score wins' : 'Lowest score wins',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: game.highestScoreWins ? Colors.green.shade600 : Colors.blue.shade600,
+                            ),
+                          ),
+                        ],
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 ),
               );
             },

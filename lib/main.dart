@@ -35,11 +35,9 @@ class ScoreMateApp extends StatelessWidget {
       darkTheme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF121212),
+        scaffoldBackgroundColor: const Color(0xFF0F0F0F),
         colorScheme: ColorScheme.dark(
-          surface: const Color(0xFF121212),       // Deep canvas background
-          primary: const Color(0xFF00E676),      // Neon Emerald green accents
-          secondary: const Color(0xFF263238),    // Dark Blue-Grey panels
+          primary: Colors.teal,
           error: Colors.redAccent,
         ),
         appBarTheme: const AppBarTheme(
@@ -49,9 +47,15 @@ class ScoreMateApp extends StatelessWidget {
           titleTextStyle: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         cardTheme: CardThemeData(  // FIX: Changed CardTheme to CardThemeData
-          color: const Color(0xFF1E1E1E), // (or Colors.white depending on the theme chosen)
+          color: const Color(0xFF1A1A1A), // (or Colors.white depending on the theme chosen)
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: Colors.teal.shade800,
+              width: 0.5,
+            ),
+          ),
         ),
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
           backgroundColor: Color(0xFF00E676),

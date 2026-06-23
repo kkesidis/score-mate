@@ -287,7 +287,7 @@ void _showPlayerHistorySheet(PlayerSession player, int playerIndexInDatabase) {
                                 leading: CircleAvatar(
                                   backgroundColor: (entry.value ?? 0) >= 0 ? Colors.teal.shade50 : Colors.red.shade50,
                                   child: Text(
-                                    'R${reversedIndex + 1}',
+                                    '#${reversedIndex + 1}',
                                     style: TextStyle(color: Colors.teal.shade900, fontWeight: FontWeight.bold),
                                   ),
                                 ),
@@ -573,45 +573,78 @@ void _showPlayerHistorySheet(PlayerSession player, int playerIndexInDatabase) {
 
                 return Card(
                   margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: rank == 1 ? Colors.amber : Colors.teal.shade100,
-                      child: Text(
-                        '#$rank',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: rank == 1 ? Colors.black : Colors.teal.shade900,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: rank == 1 ? Colors.amber : Colors.teal.shade100,
+                          child: Text(
+                            '#$rank',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: rank == 1 ? Colors.black : Colors.teal.shade900,
+                            ),
+                          ),
+                        ),
+                        title: Text(playerName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Text(
+                          'Score: $totalScore',
+                          style: const TextStyle(
+                            color: Colors.grey,
+                          ),
+                        ),
+                        onTap: () {
+                          _showAddScoreEntryDialog(playerSession, trueIndexInDatabase);
+                        },
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.history, color: Colors.blueGrey),
+                              tooltip: 'View Score History',
+                              onPressed: () {
+                                _showPlayerHistorySheet(playerSession, trueIndexInDatabase);
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                              tooltip: 'Remove Player',
+                              onPressed: () {
+                                _showDeleteConfirmationDialog(trueIndexInDatabase, playerName);
+                              },
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    title: Text(playerName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text('Total Score: $totalScore ($totalRounds entries logged)'),
-                    
-                    // NEW BEHAVIOR: Tapping the player card appends a new score entry point slot
-                    onTap: () {
-                      _showAddScoreEntryDialog(playerSession, trueIndexInDatabase);
-                    },
-                    
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // NEW: History Log Button
-                        IconButton(
-                          icon: const Icon(Icons.history, color: Colors.blueGrey),
-                          tooltip: 'View Score History',
-                          onPressed: () {
-                            _showPlayerHistorySheet(playerSession, trueIndexInDatabase);
-                          },
+                      Divider(
+                        height: 1, 
+                        thickness: 0.5,
+                        color: Colors.teal.shade800,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                        child: Row(
+                          children: [
+                            // FIX: Swapped calendar icon for a round/layers icon to match the text context
+                            Icon(
+                              Icons.layers_outlined, 
+                              size: 14, 
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '$totalRounds rounds logged',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                              ),
+                            ),
+                          ],
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                          tooltip: 'Remove Player',
-                          onPressed: () {
-                            _showDeleteConfirmationDialog(trueIndexInDatabase, playerName);
-                          },
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 );
               },

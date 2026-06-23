@@ -226,42 +226,81 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                   : 'Unknown Date';
 
               return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                child: ListTile(
-                  title: Text(sessionName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text('Played on: $sessionDate'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit_outlined, color: Colors.teal),
-                        tooltip: 'Rename Session',
-                        onPressed: () {
-                          // Pass the true list index so we know exactly which one to modify
-                          _showEditSessionDialog(reversedIndex);
-                        },
+                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      title: Text(
+                        sessionName, 
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                        tooltip: 'Delete Session',
-                        onPressed: () {
-                          _showDeleteConfirmationDialog(reversedIndex, sessionName);
-                        },
-                      ),
-                    ],
-                  ),
-                  onTap: () {
-                    // Navigate to player scores screen passing database identifiers
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PlayerScoresScreen(
-                          gameId: _currentGame.id,
-                          sessionIndex: reversedIndex, // The true un-reversed index spot of this session
+                      subtitle: Text(
+                        '${session.players?.length ?? 0} players',
+                        style: const TextStyle(
+                          color: Colors.grey,
                         ),
                       ),
-                    );
-                  },
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit_outlined, color: Colors.teal),
+                            tooltip: 'Rename Session',
+                            onPressed: () {
+                              _showEditSessionDialog(reversedIndex);
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                            tooltip: 'Delete Session',
+                            onPressed: () {
+                              _showDeleteConfirmationDialog(reversedIndex, sessionName);
+                            },
+                          ),
+                        ],
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PlayerScoresScreen(
+                              gameId: _currentGame.id,
+                              sessionIndex: reversedIndex,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    Divider(
+                      height: 1, 
+                      thickness: 0.5,
+                      color: Colors.teal.shade800,
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_today_outlined, 
+                            size: 14, 
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Played on: $sessionDate',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               );
             },
