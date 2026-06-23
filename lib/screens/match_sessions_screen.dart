@@ -225,6 +225,43 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                   ? '${session.dateTime!.day}/${session.dateTime!.month}/${session.dateTime!.year}'
                   : 'Unknown Date';
 
+              final sessionPlayers = session.players ?? [];
+
+              String winnerText = 'No winner yet';
+              if (sessionPlayers.isNotEmpty) {
+                final highestScoreWins = _currentGame.highestScoreWins;
+                
+                // Create a map matching each player to their calculated total score
+                final playerScores = <PlayerSession, int>{};
+                for (var player in sessionPlayers) {
+                  final total = player.scores.fold(0, (sum, item) => sum + (item.value ?? 0));
+                  playerScores[player] = total;
+                }
+
+                // Find the winning score value based on game settings
+                int winningScore = playerScores.values.first;
+                for (var score in playerScores.values) {
+                  if (highestScoreWins) {
+                    if (score > winningScore) winningScore = score;
+                  } else {
+                    if (score < winningScore) winningScore = score;
+                  }
+                }
+
+                // Collect all players who hit that exact winning score target
+                final winners = playerScores.entries
+                    .where((entry) => entry.value == winningScore)
+                    .map((entry) => entry.key.playerName ?? 'Unknown')
+                    .toList();
+
+                // Format the output string depending on if it's a solo victory or a tie!
+                if (winners.length > 1) {
+                  winnerText = 'Tie: ${winners.join(', ')} ($winningScore)';
+                } else {
+                  winnerText = 'Winner: ${winners.first} ($winningScore)';
+                }
+              }
+
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 child: Column(
@@ -236,7 +273,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       subtitle: Text(
-                        '${session.players?.length ?? 0} players',
+                        winnerText,
                         style: const TextStyle(
                           color: Colors.grey,
                         ),
@@ -291,6 +328,30 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                           const SizedBox(width: 6),
                           Text(
                             'Played on: $sessionDate',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Text(
+                              '|',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
+                              ),
+                            ),
+                          ),
+                          Icon(
+                            Icons.people_outline, 
+                            size: 14, 
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${sessionPlayers.length} players',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
