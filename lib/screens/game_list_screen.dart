@@ -75,7 +75,6 @@ class _GameListScreenState extends State<GameListScreen> {
     }
   }
 
-  // SHARED DIALOG: Works for both adding a new game or editing an existing one
   void _showGameDialog({BoardGame? existingGame}) {
     final nameController = TextEditingController();
     final descController = TextEditingController();

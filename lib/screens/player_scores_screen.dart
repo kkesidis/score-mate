@@ -3,6 +3,8 @@ import 'package:isar/isar.dart';
 import '../main.dart';
 import '../models/board_game.dart';
 
+enum ScoreOp { add, subtract }
+
 class PlayerScoresScreen extends StatefulWidget {
   final int gameId;
   final int sessionIndex; 
@@ -101,79 +103,235 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
     );
   }
 
-  // 2. DIALOG: Appends a new round/score point entry onto a chosen player
   void _showAddScoreEntryDialog(PlayerSession player, int playerIndexInDatabase) {
     final scoreController = TextEditingController();
     final descController = TextEditingController();
 
-    showDialog(
+    final int currentScore = player.scores.fold(0, (sum, item) => sum + (item.value ?? 0));
+    
+    ScoreOp currentOp = ScoreOp.add;
+
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) {
-        return AlertDialog(
-          title: Text('Log Score for ${player.playerName}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: scoreController,
-                autofocus: true,
-                decoration: const InputDecoration(
-                  labelText: 'Points to Add',
-                  hintText: 'e.g., 10 or -2',
-                ),
-                keyboardType: TextInputType.number,
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            
+            // Re-render header when user types
+            scoreController.addListener(() {
+              if (context.mounted) setModalState(() {});
+            });
+
+            // Enforce absolute/positive values only in our parsing calculations
+            final rawValue = int.tryParse(scoreController.text.trim()) ?? 0;
+            final parsedValue = rawValue.abs(); // Enforces values >= 0
+            
+            // Flip math preview depending on selector status
+            final finalValueModifier = currentOp == ScoreOp.add ? parsedValue : -parsedValue;
+            final newScore = currentScore + finalValueModifier;
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20.0,
+                right: 20.0,
+                top: 24.0,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24.0,
               ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: descController,
-                decoration: const InputDecoration(
-                  labelText: 'Note / Description (Optional)',
-                  hintText: 'e.g., Round 1, Longest Road',
-                ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // 1. TITLE & CALCULATION HEADER
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        player.playerName ?? 'Player',
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Current score: $currentScore → $newScore',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.54),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // 2. THE OPERATION CONTROLLER (ADD / SUBTRACT)
+                  SegmentedButton<ScoreOp>(
+                    segments: const <ButtonSegment<ScoreOp>>[
+                      ButtonSegment<ScoreOp>(
+                        value: ScoreOp.add,
+                        label: Text('Add'),
+                        icon: Icon(Icons.add),
+                      ),
+                      ButtonSegment<ScoreOp>(
+                        value: ScoreOp.subtract,
+                        label: Text('Subtract'),
+                        icon: Icon(Icons.remove),
+                      ),
+                    ],
+                    selected: <ScoreOp>{currentOp},
+                    onSelectionChanged: (Set<ScoreOp> newSelection) {
+                      setModalState(() {
+                        currentOp = newSelection.first;
+                      });
+                    },
+                    style: SegmentedButton.styleFrom(
+                      selectedBackgroundColor: Colors.teal.withOpacity(0.2),
+                      selectedForegroundColor: Colors.teal.shade300,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // 3. STRICT UNSIGNED NUMBER FIELD
+                  TextField(
+                    controller: scoreController,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      labelText: 'Points',
+                      hintText: 'e.g., 5',
+                      prefixIcon: Icon(
+                        currentOp == ScoreOp.add 
+                            ? Icons.add 
+                            : Icons.remove,
+                      ),
+                    ),
+                    // Standard unsigned number keyboard layout (no negative symbols needed!)
+                    keyboardType: TextInputType.number, 
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  TextField(
+                    controller: descController,
+                    decoration: const InputDecoration(
+                      labelText: 'Note / Description (Optional)',
+                      hintText: 'e.g., Round 1, Penalty',
+                      prefixIcon: Icon(Icons.notes_outlined),
+                    ),
+                    textCapitalization: TextCapitalization.sentences,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  Text(
+                    'Quick Select',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Row(
+                    children: [5, 10, 15, 20].map((int value) {
+                      return Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: _buildEqualWidthChip(value, currentOp, scoreController, setModalState),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+
+                  const SizedBox(height: 24),
+                  
+                  OverflowBar(
+                    alignment: MainAxisAlignment.end,
+                    spacing: 8.0,       // Horizontal gap between buttons when side-by-side
+                    overflowSpacing: 8.0, // Vertical gap between buttons if they drop/stack vertically!
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancel'),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () async {
+                          if (_game == null || scoreController.text.trim().isEmpty) return;
+                          
+                          final sessionsList = _game!.sessions.toList();
+                          final currentMatchSession = sessionsList[widget.sessionIndex];
+                          final playersList = (currentMatchSession.players ?? <PlayerSession>[]).toList();
+
+                          // Commit the correct positive/negative flag variation directly to DB
+                          final newScoreEntry = ScoreEntry()
+                            ..value = finalValueModifier
+                            ..description = descController.text.trim().isEmpty ? null : descController.text.trim();
+
+                          final targetPlayer = playersList[playerIndexInDatabase];
+                          final updatedScores = targetPlayer.scores.toList();
+                          updatedScores.add(newScoreEntry);
+                          
+                          targetPlayer.scores = updatedScores;
+                          playersList[playerIndexInDatabase] = targetPlayer;
+
+                          currentMatchSession.players = playersList;
+                          sessionsList[widget.sessionIndex] = currentMatchSession;
+                          _game!.sessions = sessionsList;
+
+                          await isar.writeTxn(() async {
+                            await isar.boardGames.put(_game!);
+                          });
+
+                          if (context.mounted) Navigator.pop(context);
+                        },
+                        child: const Text('Log Score'),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (_game == null || scoreController.text.trim().isEmpty) return;
-                final parsedValue = int.tryParse(scoreController.text.trim()) ?? 0;
-
-                final sessionsList = _game!.sessions.toList();
-                final currentMatchSession = sessionsList[widget.sessionIndex];
-                final playersList = (currentMatchSession.players ?? <PlayerSession>[]).toList();
-
-                // Build a standalone entry record chunk
-                final newScoreEntry = ScoreEntry()
-                  ..value = parsedValue
-                  ..description = descController.text.trim().isEmpty ? null : descController.text.trim();
-
-                // Append it securely to this player's active timeline profile array
-                final targetPlayer = playersList[playerIndexInDatabase];
-                final updatedScores = targetPlayer.scores.toList();
-                updatedScores.add(newScoreEntry);
-                
-                targetPlayer.scores = updatedScores;
-                playersList[playerIndexInDatabase] = targetPlayer;
-
-                currentMatchSession.players = playersList;
-                sessionsList[widget.sessionIndex] = currentMatchSession;
-                _game!.sessions = sessionsList;
-
-                await isar.writeTxn(() async {
-                  await isar.boardGames.put(_game!);
-                });
-
-                if (context.mounted) Navigator.pop(context);
-              },
-              child: const Text('Log Score'),
-            ),
-          ],
+            );
+          },
         );
+      },
+    );
+  }
+
+  Widget _buildEqualWidthChip(
+    int value, 
+    ScoreOp currentOp, 
+    TextEditingController scoreController, 
+    StateSetter setModalState
+  ) {
+    final String prefix = currentOp == ScoreOp.add ? '+' : '-';
+    final isAdd = currentOp == ScoreOp.add;
+
+    return ActionChip(
+      // Enforces centered alignment inside the expanded boundaries
+      label: Center(
+        child: Text(
+          '$prefix$value',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ),
+      side: BorderSide(
+        color: isAdd ? Colors.green.withValues(alpha: 0.2) : Colors.red.withValues(alpha: 0.2),
+      ),
+      onPressed: () {
+        setModalState(() {
+          scoreController.text = value.toString();
+          scoreController.selection = TextSelection.fromPosition(
+            TextPosition(offset: scoreController.text.length),
+          );
+        });
       },
     );
   }
