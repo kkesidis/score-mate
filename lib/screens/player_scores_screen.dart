@@ -187,7 +187,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                       });
                     },
                     style: SegmentedButton.styleFrom(
-                      selectedBackgroundColor: Colors.teal.withOpacity(0.2),
+                      selectedBackgroundColor: Colors.teal.withValues(alpha: 0.2),
                       selectedForegroundColor: Colors.teal.shade300,
                     ),
                   ),
@@ -405,7 +405,7 @@ void _showPlayerHistorySheet(PlayerSession player, int playerIndexInDatabase) {
             
             // Re-fetch the fresh live player instance from our synced state
             final currentMatch = _game!.sessions[widget.sessionIndex];
-            final livePlayer = currentMatch.players![playerIndexInDatabase];
+            final livePlayer = currentMatch.players[playerIndexInDatabase];
             final scores = livePlayer.scores;
 
             return Padding(

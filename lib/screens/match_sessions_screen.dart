@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:isar/isar.dart';
 import '../main.dart'; // Imports our global 'isar' instance
 import '../models/board_game.dart';
 import 'player_scores_screen.dart';
