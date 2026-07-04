@@ -35,105 +35,113 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
     });
   }
 
-  void _showAddSessionDialog() {
+  void _showSessionDialog({int? actualIndex}) {
     final nameController = TextEditingController();
+    final isEditing = actualIndex != null;
 
-    showDialog(
+    if (isEditing) {
+      final existingSession = _currentGame.sessions[actualIndex];
+      nameController.text = existingSession.name ?? '';
+    }
+
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true, // Allows the sheet to resize when keyboards push up
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) {
-        return AlertDialog(
-          title: const Text('New Match Session'),
-          content: TextField(
-            controller: nameController,
-            decoration: InputDecoration(
-              labelText: 'Session Name (Optional)',
-              hintText: 'Defaults to "Match #${_currentGame.sessions.length + 1}"',
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                // Determine the next match number based on current list length
-                final nextMatchNumber = _currentGame.sessions.length + 1;
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                top: 16.0,
+                left: 16.0,
+                right: 16.0,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16.0, // Keyboard safety
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isEditing ? 'Rename Match Session' : 'New Match Session',
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
+                  ),
 
-                // If the user typed nothing, default to "Match #X"
-                final sessionName = nameController.text.trim().isEmpty 
-                    ? 'Match #$nextMatchNumber' 
-                    : nameController.text.trim();
+                  const SizedBox(height: 10),
 
-                // 1. Create the new embedded session object
-                final newSession = MatchSession()
-                  ..name = sessionName
-                  ..dateTime = DateTime.now(); // Automatically timestamp it right now
+                  TextField(
+                    controller: nameController,
+                    decoration: InputDecoration(
+                      labelText: isEditing ? 'Session Name' : 'Session Name (Optional)',
+                      hintText: isEditing 
+                        ? null 
+                        : 'Defaults to "Match #${_currentGame.sessions.length + 1}"',
+                    ),
+                  ),
 
-                // 2. Append this session into our game's session history list
-                final updatedSessions = _currentGame.sessions.toList();
-                updatedSessions.add(newSession);
-                _currentGame.sessions = updatedSessions;
+                  const SizedBox(height: 24),
 
-                // 3. Write the whole updated parent object back to Isar
-                await isar.writeTxn(() async {
-                  await isar.boardGames.put(_currentGame);
-                });
+                  OverflowBar(
+                    alignment: MainAxisAlignment.end,
+                    spacing: 8.0,       // Horizontal gap between buttons when side-by-side
+                    overflowSpacing: 8.0, // Vertical gap between buttons if they drop/stack vertically!
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancel'),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () async {
+                          final textInput = nameController.text.trim();
+                
+                          // Edit guard: don't let them clear out an existing name to empty string
+                          if (isEditing && textInput.isEmpty) return;
 
-                if (context.mounted) Navigator.pop(context);
-              },
-              child: const Text('Create'),
-            ),
-          ],
+                          final updatedSessions = _currentGame.sessions.toList();
+
+                          if (isEditing) {
+                            // 2A. EXECUTE TRANSACTION EDIT UPDATE ROUTINE
+                            updatedSessions[actualIndex].name = textInput;
+                          } else {
+                            // 2B. EXECUTE TRANSACTION CREATE INSERTION ROUTINE
+                            final nextMatchNumber = _currentGame.sessions.length + 1;
+                            final sessionName = textInput.isEmpty ? 'Match #$nextMatchNumber' : textInput;
+
+                            final newSession = MatchSession()
+                              ..name = sessionName
+                              ..dateTime = DateTime.now();
+
+                            updatedSessions.add(newSession);
+                          }
+
+                          // 3. PERSIST THE SESSION LIST ARRAY STATE CHUNK
+                          _currentGame.sessions = updatedSessions;
+                          await isar.writeTxn(() async {
+                            await isar.boardGames.put(_currentGame);
+                          });
+
+                          if (context.mounted) Navigator.pop(context);
+                        },
+                        child: Text(isEditing ? 'Save' : 'Add'),
+                      ),
+                    ]
+                  ),
+                ],
+              )
+            );
+          }
         );
-      },
+      }
     );
   }
 
-  // 1. EDIT DIALOG: Pre-fills with the selected match name to let users rename it
-  void _showEditSessionDialog(int actualIndex) {
-    final nameController = TextEditingController();
-    final session = _currentGame.sessions[actualIndex];
-    nameController.text = session.name ?? '';
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Rename Match Session'),
-          content: TextField(
-            controller: nameController,
-            decoration: const InputDecoration(labelText: 'Session Name'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (nameController.text.trim().isEmpty) return;
-
-                // Grab the list, update the name at this index slot, then pass it back
-                final updatedSessions = _currentGame.sessions.toList();
-                updatedSessions[actualIndex].name = nameController.text.trim();
-                _currentGame.sessions = updatedSessions;
-
-                await isar.writeTxn(() async {
-                  await isar.boardGames.put(_currentGame);
-                });
-
-                if (context.mounted) Navigator.pop(context);
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // 2. DELETE CONFIRMATION BARRIER
   void _showDeleteConfirmationDialog(int actualIndex, String sessionName) {
     showDialog(
       context: context,
@@ -284,7 +292,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                             icon: const Icon(Icons.edit_outlined, color: Colors.teal),
                             tooltip: 'Rename Session',
                             onPressed: () {
-                              _showEditSessionDialog(reversedIndex);
+                              _showSessionDialog(actualIndex: reversedIndex);
                             },
                           ),
                           IconButton(
@@ -366,7 +374,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
             },
           ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddSessionDialog,
+        onPressed: _showSessionDialog,
         backgroundColor: Colors.teal,
         child: const Icon(Icons.add, color: Colors.white),
       ),
