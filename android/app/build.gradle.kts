@@ -1,6 +1,16 @@
+import java.io.FileInputStream
+import java.util.Properties
+
+// 1. Read your signing key properties safely at the top
+val keystoreProperties = Properties().apply {
+    val keystorePropertiesFile = rootProject.file("key.properties")
+    if (keystorePropertiesFile.exists()) {
+        load(FileInputStream(keystorePropertiesFile))
+    }
+}
+
 plugins {
     id("com.android.application")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
@@ -15,21 +25,38 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.score_mate"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        applicationId = "com.kkesidis.scoremate"
+        
+        // 2. Force your app to lock to Android 14
+        minSdk = 34
+        targetSdk = 34
+        
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
+    // 3. Define how to sign the app first
+    signingConfigs {
+        getByName("debug") {
+            // Default debug settings
+        }
+        
+        create("release") {
+            keyAlias = keystoreProperties.getProperty("keyAlias")
+            keyPassword = keystoreProperties.getProperty("keyPassword")
+            storePassword = keystoreProperties.getProperty("storePassword")
+            
+            val storeFilePath = keystoreProperties.getProperty("storeFile")
+            storeFile = if (storeFilePath != null) file(storeFilePath) else null
+        }
+    }
+
+    // 4. Set up the build type optimization using the signing rules above
     buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+        getByName("release") {
+            isMinifyEnabled = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }

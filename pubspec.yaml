@@ -54,6 +54,7 @@ dev_dependencies:
   # Tools that will automatically write the database code for you
   isar_generator: ^3.1.0+1
   build_runner: any
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -96,3 +97,10 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  image_path: "assets/icon/app_icon.png"
+  # This automatically creates adaptive icon support for modern Android devices
+  adaptive_icon_background: "#009688" # Set this to your app's Teal color hex
+  adaptive_icon_foreground: "assets/icon/app_icon.png"
