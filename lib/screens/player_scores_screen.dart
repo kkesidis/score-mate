@@ -133,13 +133,32 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
     );
   }
 
-  void _showAddScoreEntryDialog(PlayerSession player, int playerIndexInDatabase) {
-    final scoreController = TextEditingController();
-    final descController = TextEditingController();
+  void _showScoreEntryFormBottomSheet(
+    PlayerSession player,
+    int playerIndexInDatabase, {
+    int? scoreIndex,            // Optional named param for editing
+    StateSetter? setSheetState, // Optional named param for history panels
+  }) {
+    final bool isEditing = scoreIndex != null;
+    final ScoreEntry? existingEntry = isEditing ? player.scores[scoreIndex] : null;
 
-    final int currentScore = player.scores.fold(0, (sum, item) => sum + (item.value ?? 0));
+    // Calculate base score excluding the entry being updated (if editing)
+    int currentScore = 0;
+    for (int i = 0; i < player.scores.length; i++) {
+      if (isEditing && i == scoreIndex) continue;
+      currentScore += player.scores[i].value ?? 0;
+    }
+
+    final scoreController = TextEditingController();
+    final descController = TextEditingController(text: existingEntry?.description ?? '');
     
     ScoreOp currentOp = ScoreOp.add;
+
+    if (isEditing && existingEntry != null) {
+      final int entryValue = existingEntry.value ?? 0;
+      currentOp = entryValue < 0 ? ScoreOp.subtract : ScoreOp.add;
+      scoreController.text = entryValue.abs().toString();
+    }
 
     showModalBottomSheet(
       context: context,
@@ -151,16 +170,14 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setModalState) {
             
-            // Re-render header when user types
+            // Re-render header calculations dynamically as text is typed
             scoreController.addListener(() {
               if (context.mounted) setModalState(() {});
             });
 
-            // Enforce absolute/positive values only in our parsing calculations
             final rawValue = int.tryParse(scoreController.text.trim()) ?? 0;
-            final parsedValue = rawValue.abs(); // Enforces values >= 0
+            final parsedValue = rawValue.abs(); 
             
-            // Flip math preview depending on selector status
             final finalValueModifier = currentOp == ScoreOp.add ? parsedValue : -parsedValue;
             final newScore = currentScore + finalValueModifier;
 
@@ -180,12 +197,12 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        player.playerName ?? 'Player',
+                        isEditing ? 'Edit Entry for ${player.playerName}' : (player.playerName ?? 'Player'),
                         style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Current score: $currentScore → $newScore',
+                        'Score transformation: $currentScore → $newScore',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -223,7 +240,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                   ),
                   const SizedBox(height: 20),
                   
-                  // 3. STRICT UNSIGNED NUMBER FIELD
+                  // 3. MAIN INPUT FIELD
                   TextField(
                     controller: scoreController,
                     autofocus: true,
@@ -231,12 +248,11 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                       labelText: 'Points',
                       hintText: 'e.g., 5',
                       prefixIcon: Icon(
-                        currentOp == ScoreOp.add 
-                            ? Icons.add 
-                            : Icons.remove,
+                        currentOp == ScoreOp.add ? Icons.add : Icons.remove,
+                        color: currentOp == ScoreOp.add ? Colors.green : Colors.red,
                       ),
+                      border: const OutlineInputBorder(),
                     ),
-                    // Standard unsigned number keyboard layout (no negative symbols needed!)
                     keyboardType: TextInputType.number, 
                   ),
                   const SizedBox(height: 16),
@@ -247,12 +263,13 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                       labelText: 'Note / Description (Optional)',
                       hintText: 'e.g., Round 1, Penalty',
                       prefixIcon: Icon(Icons.notes_outlined),
+                      border: OutlineInputBorder(),
                     ),
                     textCapitalization: TextCapitalization.sentences,
                   ),
-
                   const SizedBox(height: 16),
 
+                  // 4. QUICK SELECT CHIPS
                   Text(
                     'Quick Select',
                     style: TextStyle(
@@ -262,9 +279,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                       letterSpacing: 0.5,
                     ),
                   ),
-
                   const SizedBox(height: 8),
-
                   Row(
                     children: [5, 10, 15, 20].map((int value) {
                       return Expanded(
@@ -275,13 +290,13 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                       );
                     }).toList(),
                   ),
-
                   const SizedBox(height: 24),
                   
+                  // 5. ACTION BUTTON CONTROLS FOOTER
                   OverflowBar(
                     alignment: MainAxisAlignment.end,
-                    spacing: 8.0,       // Horizontal gap between buttons when side-by-side
-                    overflowSpacing: 8.0, // Vertical gap between buttons if they drop/stack vertically!
+                    spacing: 8.0,       
+                    overflowSpacing: 8.0, 
                     children: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
@@ -300,14 +315,21 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                           final currentMatchSession = sessionsList[widget.sessionIndex];
                           final playersList = (currentMatchSession.players ?? <PlayerSession>[]).toList();
 
-                          // Commit the correct positive/negative flag variation directly to DB
-                          final newScoreEntry = ScoreEntry()
+                          // Instantiate updated score details
+                          final targetScoreEntry = ScoreEntry()
                             ..value = finalValueModifier
                             ..description = descController.text.trim().isEmpty ? null : descController.text.trim();
 
                           final targetPlayer = playersList[playerIndexInDatabase];
                           final updatedScores = targetPlayer.scores.toList();
-                          updatedScores.add(newScoreEntry);
+                          
+                          if (isEditing) {
+                            // Mutate the existing element at its index placement
+                            updatedScores[scoreIndex] = targetScoreEntry;
+                          } else {
+                            // Append directly to history
+                            updatedScores.add(targetScoreEntry);
+                          }
                           
                           targetPlayer.scores = updatedScores;
                           playersList[playerIndexInDatabase] = targetPlayer;
@@ -320,21 +342,26 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                             await isar.boardGames.put(_game!);
                           });
 
+                          // Fire localized view updates back up to the calling history panel
+                          if (setSheetState != null) {
+                            setSheetState(() {});
+                          }
+
                           if (context.mounted) Navigator.pop(context);
                         },
-                        child: const Text('Log Score'),
+                        child: Text(isEditing ? 'Save' : 'Log Score'),
                       ),
                     ],
                   ),
                 ],
               ),
             );
-          },
+          }
         );
-      },
+      }
     );
   }
-
+                
   Widget _buildEqualWidthChip(
     int value, 
     ScoreOp currentOp, 
@@ -419,7 +446,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
     }
   }
 
-void _showPlayerHistorySheet(PlayerSession player, int playerIndexInDatabase) {
+  void _showPlayerHistorySheet(PlayerSession player, int playerIndexInDatabase) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true, // Allows the sheet to resize when keyboards push up
@@ -491,11 +518,11 @@ void _showPlayerHistorySheet(PlayerSession player, int playerIndexInDatabase) {
                                     IconButton(
                                       icon: const Icon(Icons.edit_outlined, color: Colors.teal, size: 20),
                                       onPressed: () {
-                                        _showEditScoreEntryInlineDialog(
-                                          playerIndexInDatabase, 
-                                          reversedIndex, 
-                                          entry,
-                                          setSheetState,
+                                        _showScoreEntryFormBottomSheet(
+                                          livePlayer,            // 1. Required positional player data object
+                                          playerIndexInDatabase, // 2. Required positional target database index slot
+                                          scoreIndex: reversedIndex, // Named parameter identifying which entry is targeted
+                                          setSheetState: setSheetState, // Named parameter callback to force live data rebuilds below
                                         );
                                       },
                                     ),
@@ -521,82 +548,6 @@ void _showPlayerHistorySheet(PlayerSession player, int playerIndexInDatabase) {
               ),
             );
           }
-        );
-      },
-    );
-  }
-
-  // Edits a single round entry inside a player's score log array
-  void _showEditScoreEntryInlineDialog(
-    int playerIdx, 
-    int scoreIdx, 
-    ScoreEntry entry, 
-    StateSetter setSheetState
-  ) {
-    final scoreController = TextEditingController(text: entry.value?.toString() ?? '0');
-    final descController = TextEditingController(text: entry.description ?? '');
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Edit Round Entry'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: scoreController,
-                autofocus: true,
-                decoration: const InputDecoration(labelText: 'Points'),
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: descController,
-                decoration: const InputDecoration(labelText: 'Note'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (_game == null) return;
-                final parsedValue = int.tryParse(scoreController.text.trim()) ?? 0;
-
-                final sessionsList = _game!.sessions.toList();
-                final currentMatch = sessionsList[widget.sessionIndex];
-                final playersList = (currentMatch.players ?? <PlayerSession>[]).toList();
-                
-                final targetPlayer = playersList[playerIdx];
-                final updatedScores = targetPlayer.scores.toList();
-
-                // Mutate the entry at its historical position
-                updatedScores[scoreIdx] = ScoreEntry()
-                  ..value = parsedValue
-                  ..description = descController.text.trim().isEmpty ? null : descController.text.trim();
-
-                targetPlayer.scores = updatedScores;
-                playersList[playerIdx] = targetPlayer;
-                currentMatch.players = playersList;
-                sessionsList[widget.sessionIndex] = currentMatch;
-                _game!.sessions = sessionsList;
-
-                await isar.writeTxn(() async {
-                  await isar.boardGames.put(_game!);
-                });
-
-                // Update the sheet view state so the list changes instantly behind the dialog
-                setSheetState(() {}); 
-
-                if (context.mounted) Navigator.pop(context);
-              },
-              child: const Text('Save'),
-            ),
-          ],
         );
       },
     );
@@ -783,7 +734,7 @@ void _showPlayerHistorySheet(PlayerSession player, int playerIndexInDatabase) {
                           ),
                         ),
                         onTap: () {
-                          _showAddScoreEntryDialog(playerSession, trueIndexInDatabase);
+                          _showScoreEntryFormBottomSheet(playerSession, trueIndexInDatabase);
                         },
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
