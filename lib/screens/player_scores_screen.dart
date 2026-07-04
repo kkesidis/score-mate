@@ -48,12 +48,21 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
     return playerSession.scores.fold(0, (sum, item) => sum + (item.value ?? 0));
   }
 
-  void _showAddPlayerDialog() {
+  void _showPlayerFormBottomSheet({int? playerIndexInDatabase}) {
     final nameController = TextEditingController();
+    final bool isEditing = playerIndexInDatabase != null;
+
+    // 1. SETUP WORKFLOW MODE CONDITIONS
+    if (isEditing) {
+      if (_game == null) return;
+      final currentMatchSession = _game!.sessions[widget.sessionIndex];
+      final targetPlayer = currentMatchSession.players[playerIndexInDatabase];
+      nameController.text = targetPlayer.playerName ?? '';
+    }
 
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, // Allows the sheet to resize when keyboards push up
+      isScrollControlled: true, 
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -62,20 +71,29 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
           builder: (context, setDialogState) {
             return Padding(
               padding: EdgeInsets.only(
-                top: 16.0,
+                top: 24.0,
                 left: 16.0,
                 right: 16.0,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 16.0, // Keyboard safety
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24.0, // Keyboard safety
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch, // Stretches elements uniformly
                 children: [
+                  Text(
+                    isEditing ? 'Rename Player' : 'Add New Player',
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  
                   TextField(
                     controller: nameController,
+                    autofocus: true,
+                    textCapitalization: TextCapitalization.words,
                     decoration: const InputDecoration(
                       labelText: 'Player Name',
                       hintText: 'e.g., Alice',
+                      border: OutlineInputBorder(),
                     ),
                   ),
                   
@@ -83,8 +101,8 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
                   OverflowBar(
                     alignment: MainAxisAlignment.end,
-                    spacing: 8.0,       // Horizontal gap between buttons when side-by-side
-                    overflowSpacing: 8.0, // Vertical gap between buttons if they drop/stack vertically!
+                    spacing: 8.0,       
+                    overflowSpacing: 8.0, 
                     children: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
@@ -97,18 +115,25 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                           foregroundColor: Colors.white,
                         ),
                         onPressed: () async {
-                          if (_game == null || nameController.text.trim().isEmpty) return;
+                          final textInput = nameController.text.trim();
+                          if (_game == null || textInput.isEmpty) return;
 
                           final sessionsList = _game!.sessions.toList();
                           final currentMatchSession = sessionsList[widget.sessionIndex];
                           final playersList = (currentMatchSession.players ?? <PlayerSession>[]).toList();
 
-                          // Create a completely new player profile starting with zero entries
-                          final newPlayerSession = PlayerSession()
-                            ..playerName = nameController.text.trim()
-                            ..scores = [];
-
-                          playersList.add(newPlayerSession);
+                          if (isEditing) {
+                            // 2A. MUTATE THE EXISTING SLOT
+                            final targetPlayer = playersList[playerIndexInDatabase];
+                            targetPlayer.playerName = textInput;
+                            playersList[playerIndexInDatabase] = targetPlayer;
+                          } else {
+                            // 2B. APPEND A NEW PLAYER PROFILE
+                            final newPlayerSession = PlayerSession()
+                              ..playerName = textInput
+                              ..scores = [];
+                            playersList.add(newPlayerSession);
+                          }
 
                           currentMatchSession.players = playersList;
                           sessionsList[widget.sessionIndex] = currentMatchSession;
@@ -120,7 +145,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
                           if (context.mounted) Navigator.pop(context);
                         },
-                        child: Text('Add'),
+                        child: Text(isEditing ? 'Save' : 'Add'),
                       ),
                     ]
                   ),
@@ -740,6 +765,13 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
+                              icon: const Icon(Icons.edit_outlined, color: Colors.blueGrey),
+                              tooltip: 'Edit Player',
+                              onPressed: () {
+                                _showPlayerFormBottomSheet(playerIndexInDatabase: trueIndexInDatabase);
+                              },
+                            ),
+                            IconButton(
                               icon: const Icon(Icons.history, color: Colors.blueGrey),
                               tooltip: 'View Score History',
                               onPressed: () {
@@ -789,7 +821,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
               },
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddPlayerDialog, // Floating Action Button now strictly registers new names
+        onPressed: _showPlayerFormBottomSheet, // Floating Action Button now strictly registers new names
         backgroundColor: Colors.teal,
         child: const Icon(Icons.add, color: Colors.white),
       ),
