@@ -6,7 +6,7 @@ enum ScoreOp { add, subtract }
 
 class PlayerScoresScreen extends StatefulWidget {
   final int gameId;
-  final int sessionIndex; 
+  final int sessionIndex;
 
   const PlayerScoresScreen({
     super.key,
@@ -62,7 +62,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, 
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -74,18 +74,24 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                 top: 24.0,
                 left: 16.0,
                 right: 16.0,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24.0, // Keyboard safety
+                bottom:
+                    MediaQuery.of(context).viewInsets.bottom +
+                    24.0, // Keyboard safety
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch, // Stretches elements uniformly
+                crossAxisAlignment:
+                    CrossAxisAlignment.stretch, // Stretches elements uniformly
                 children: [
                   Text(
                     isEditing ? 'Rename Player' : 'Add New Player',
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   TextField(
                     controller: nameController,
                     autofocus: true,
@@ -96,13 +102,13 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                       border: OutlineInputBorder(),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 24),
 
                   OverflowBar(
                     alignment: MainAxisAlignment.end,
-                    spacing: 8.0,       
-                    overflowSpacing: 8.0, 
+                    spacing: 8.0,
+                    overflowSpacing: 8.0,
                     children: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
@@ -119,12 +125,16 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                           if (_game == null || textInput.isEmpty) return;
 
                           final sessionsList = _game!.sessions.toList();
-                          final currentMatchSession = sessionsList[widget.sessionIndex];
-                          final playersList = (currentMatchSession.players ?? <PlayerSession>[]).toList();
+                          final currentMatchSession =
+                              sessionsList[widget.sessionIndex];
+                          final playersList =
+                              (currentMatchSession.players ?? <PlayerSession>[])
+                                  .toList();
 
                           if (isEditing) {
                             // 2A. MUTATE THE EXISTING SLOT
-                            final targetPlayer = playersList[playerIndexInDatabase];
+                            final targetPlayer =
+                                playersList[playerIndexInDatabase];
                             targetPlayer.playerName = textInput;
                             playersList[playerIndexInDatabase] = targetPlayer;
                           } else {
@@ -136,7 +146,8 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                           }
 
                           currentMatchSession.players = playersList;
-                          sessionsList[widget.sessionIndex] = currentMatchSession;
+                          sessionsList[widget.sessionIndex] =
+                              currentMatchSession;
                           _game!.sessions = sessionsList;
 
                           await isar.writeTxn(() async {
@@ -147,25 +158,27 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                         },
                         child: Text(isEditing ? 'Save' : 'Add'),
                       ),
-                    ]
+                    ],
                   ),
-                ]
-              )
+                ],
+              ),
             );
-          }
+          },
         );
-      }
+      },
     );
   }
 
   void _showScoreEntryFormBottomSheet(
     PlayerSession player,
     int playerIndexInDatabase, {
-    int? scoreIndex,            // Optional named param for editing
+    int? scoreIndex, // Optional named param for editing
     StateSetter? setSheetState, // Optional named param for history panels
   }) {
     final bool isEditing = scoreIndex != null;
-    final ScoreEntry? existingEntry = isEditing ? player.scores[scoreIndex] : null;
+    final ScoreEntry? existingEntry = isEditing
+        ? player.scores[scoreIndex]
+        : null;
 
     // Calculate base score excluding the entry being updated (if editing)
     int currentScore = 0;
@@ -175,8 +188,10 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
     }
 
     final scoreController = TextEditingController();
-    final descController = TextEditingController(text: existingEntry?.description ?? '');
-    
+    final descController = TextEditingController(
+      text: existingEntry?.description ?? '',
+    );
+
     ScoreOp currentOp = ScoreOp.add;
 
     if (isEditing && existingEntry != null) {
@@ -194,16 +209,17 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       builder: (context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setModalState) {
-            
             // Re-render header calculations dynamically as text is typed
             scoreController.addListener(() {
               if (context.mounted) setModalState(() {});
             });
 
             final rawValue = int.tryParse(scoreController.text.trim()) ?? 0;
-            final parsedValue = rawValue.abs(); 
-            
-            final finalValueModifier = currentOp == ScoreOp.add ? parsedValue : -parsedValue;
+            final parsedValue = rawValue.abs();
+
+            final finalValueModifier = currentOp == ScoreOp.add
+                ? parsedValue
+                : -parsedValue;
             final newScore = currentScore + finalValueModifier;
 
             return Padding(
@@ -222,8 +238,13 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isEditing ? 'Edit Entry for ${player.playerName}' : (player.playerName ?? 'Player'),
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        isEditing
+                            ? 'Edit Entry for ${player.playerName}'
+                            : (player.playerName ?? 'Player'),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -231,7 +252,9 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
-                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.54),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.54),
                         ),
                       ),
                     ],
@@ -259,12 +282,14 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                       });
                     },
                     style: SegmentedButton.styleFrom(
-                      selectedBackgroundColor: Colors.teal.withValues(alpha: 0.2),
+                      selectedBackgroundColor: Colors.teal.withValues(
+                        alpha: 0.2,
+                      ),
                       selectedForegroundColor: Colors.teal.shade300,
                     ),
                   ),
                   const SizedBox(height: 20),
-                  
+
                   // 3. MAIN INPUT FIELD
                   TextField(
                     controller: scoreController,
@@ -274,14 +299,16 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                       hintText: 'e.g., 5',
                       prefixIcon: Icon(
                         currentOp == ScoreOp.add ? Icons.add : Icons.remove,
-                        color: currentOp == ScoreOp.add ? Colors.green : Colors.red,
+                        color: currentOp == ScoreOp.add
+                            ? Colors.green
+                            : Colors.red,
                       ),
                       border: const OutlineInputBorder(),
                     ),
-                    keyboardType: TextInputType.number, 
+                    keyboardType: TextInputType.number,
                   ),
                   const SizedBox(height: 16),
-                  
+
                   TextField(
                     controller: descController,
                     decoration: const InputDecoration(
@@ -300,7 +327,9 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.4),
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -310,18 +339,23 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                       return Expanded(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: _buildEqualWidthChip(value, currentOp, scoreController, setModalState),
+                          child: _buildEqualWidthChip(
+                            value,
+                            currentOp,
+                            scoreController,
+                            setModalState,
+                          ),
                         ),
                       );
                     }).toList(),
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // 5. ACTION BUTTON CONTROLS FOOTER
                   OverflowBar(
                     alignment: MainAxisAlignment.end,
-                    spacing: 8.0,       
-                    overflowSpacing: 8.0, 
+                    spacing: 8.0,
+                    overflowSpacing: 8.0,
                     children: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
@@ -334,20 +368,28 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                           foregroundColor: Colors.white,
                         ),
                         onPressed: () async {
-                          if (_game == null || scoreController.text.trim().isEmpty) return;
-                          
+                          if (_game == null ||
+                              scoreController.text.trim().isEmpty)
+                            return;
+
                           final sessionsList = _game!.sessions.toList();
-                          final currentMatchSession = sessionsList[widget.sessionIndex];
-                          final playersList = (currentMatchSession.players ?? <PlayerSession>[]).toList();
+                          final currentMatchSession =
+                              sessionsList[widget.sessionIndex];
+                          final playersList =
+                              (currentMatchSession.players ?? <PlayerSession>[])
+                                  .toList();
 
                           // Instantiate updated score details
                           final targetScoreEntry = ScoreEntry()
                             ..value = finalValueModifier
-                            ..description = descController.text.trim().isEmpty ? null : descController.text.trim();
+                            ..description = descController.text.trim().isEmpty
+                                ? null
+                                : descController.text.trim();
 
-                          final targetPlayer = playersList[playerIndexInDatabase];
+                          final targetPlayer =
+                              playersList[playerIndexInDatabase];
                           final updatedScores = targetPlayer.scores.toList();
-                          
+
                           if (isEditing) {
                             // Mutate the existing element at its index placement
                             updatedScores[scoreIndex] = targetScoreEntry;
@@ -355,12 +397,13 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                             // Append directly to history
                             updatedScores.add(targetScoreEntry);
                           }
-                          
+
                           targetPlayer.scores = updatedScores;
                           playersList[playerIndexInDatabase] = targetPlayer;
 
                           currentMatchSession.players = playersList;
-                          sessionsList[widget.sessionIndex] = currentMatchSession;
+                          sessionsList[widget.sessionIndex] =
+                              currentMatchSession;
                           _game!.sessions = sessionsList;
 
                           await isar.writeTxn(() async {
@@ -381,17 +424,17 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                 ],
               ),
             );
-          }
+          },
         );
-      }
+      },
     );
   }
-                
+
   Widget _buildEqualWidthChip(
-    int value, 
-    ScoreOp currentOp, 
-    TextEditingController scoreController, 
-    StateSetter setModalState
+    int value,
+    ScoreOp currentOp,
+    TextEditingController scoreController,
+    StateSetter setModalState,
   ) {
     final String prefix = currentOp == ScoreOp.add ? '+' : '-';
     final isAdd = currentOp == ScoreOp.add;
@@ -405,7 +448,9 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
         ),
       ),
       side: BorderSide(
-        color: isAdd ? Colors.green.withValues(alpha: 0.2) : Colors.red.withValues(alpha: 0.2),
+        color: isAdd
+            ? Colors.green.withValues(alpha: 0.2)
+            : Colors.red.withValues(alpha: 0.2),
       ),
       onPressed: () {
         setModalState(() {
@@ -424,7 +469,9 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Remove Player'),
-          content: Text('Are you sure you want to remove "$playerName" from this match? This will permanently delete all their logged scores for this session.'),
+          content: Text(
+            'Are you sure you want to remove "$playerName" from this match? This will permanently delete all their logged scores for this session.',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -449,10 +496,11 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
   void _deletePlayer(int playerIndexInList) async {
     if (_game == null) return;
-    
+
     final sessionsList = _game!.sessions.toList();
     final currentMatchSession = sessionsList[widget.sessionIndex];
-    final playersList = (currentMatchSession.players ?? <PlayerSession>[]).toList();
+    final playersList = (currentMatchSession.players ?? <PlayerSession>[])
+        .toList();
 
     playersList.removeAt(playerIndexInList);
 
@@ -471,20 +519,24 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
     }
   }
 
-  void _showPlayerHistorySheet(PlayerSession player, int playerIndexInDatabase) {
+  void _showPlayerHistorySheet(
+    PlayerSession player,
+    int playerIndexInDatabase,
+  ) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, // Allows the sheet to resize when keyboards push up
+      isScrollControlled:
+          true, // Allows the sheet to resize when keyboards push up
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        // StatefulBuilder allows the bottom sheet content to refresh in real-time 
+        // StatefulBuilder allows the bottom sheet content to refresh in real-time
         // when a single entry is edited or deleted without closing the sheet!
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setSheetState) {
             if (_game == null) return const SizedBox.shrink();
-            
+
             // Re-fetch the fresh live player instance from our synced state
             final currentMatch = _game!.sessions[widget.sessionIndex];
             final livePlayer = currentMatch.players[playerIndexInDatabase];
@@ -495,7 +547,9 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                 top: 16.0,
                 left: 16.0,
                 right: 16.0,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 16.0, // Keyboard safety
+                bottom:
+                    MediaQuery.of(context).viewInsets.bottom +
+                    16.0, // Keyboard safety
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -503,13 +557,19 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                 children: [
                   Text(
                     "${livePlayer.playerName}'s Score Log",
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.teal,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   scores.isEmpty
                       ? const Padding(
                           padding: EdgeInsets.symmetric(vertical: 20),
-                          child: Center(child: Text('No scores logged yet for this match.')),
+                          child: Center(
+                            child: Text('No scores logged yet for this match.'),
+                          ),
                         )
                       : Flexible(
                           child: ListView.builder(
@@ -518,45 +578,64 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                             itemBuilder: (context, index) {
                               final reversedIndex = scores.length - 1 - index;
                               final entry = scores[reversedIndex];
-                              
-                              final valueString = (entry.value ?? 0) >= 0 
-                                  ? '+${entry.value}' 
+
+                              final valueString = (entry.value ?? 0) >= 0
+                                  ? '+${entry.value}'
                                   : '${entry.value}';
 
                               return ListTile(
                                 leading: CircleAvatar(
-                                  backgroundColor: (entry.value ?? 0) >= 0 ? Colors.teal.shade50 : Colors.red.shade50,
+                                  backgroundColor: (entry.value ?? 0) >= 0
+                                      ? Colors.teal.shade50
+                                      : Colors.red.shade50,
                                   child: Text(
                                     '#${reversedIndex + 1}',
-                                    style: TextStyle(color: Colors.teal.shade900, fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                      color: Colors.teal.shade900,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                                 title: Text(
                                   '$valueString points',
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                                subtitle: Text(entry.description ?? 'No note provided.'),
+                                subtitle: Text(
+                                  entry.description ?? 'No note provided.',
+                                ),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     // EDIT ENTRY BUTTON
                                     IconButton(
-                                      icon: const Icon(Icons.edit_outlined, color: Colors.teal, size: 20),
+                                      icon: const Icon(
+                                        Icons.edit_outlined,
+                                        color: Colors.teal,
+                                        size: 20,
+                                      ),
                                       onPressed: () {
                                         _showScoreEntryFormBottomSheet(
-                                          livePlayer,            // 1. Required positional player data object
+                                          livePlayer, // 1. Required positional player data object
                                           playerIndexInDatabase, // 2. Required positional target database index slot
-                                          scoreIndex: reversedIndex, // Named parameter identifying which entry is targeted
-                                          setSheetState: setSheetState, // Named parameter callback to force live data rebuilds below
+                                          scoreIndex:
+                                              reversedIndex, // Named parameter identifying which entry is targeted
+                                          setSheetState:
+                                              setSheetState, // Named parameter callback to force live data rebuilds below
                                         );
                                       },
                                     ),
                                     // DELETE ENTRY BUTTON
                                     IconButton(
-                                      icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+                                      icon: const Icon(
+                                        Icons.delete_outline,
+                                        color: Colors.redAccent,
+                                        size: 20,
+                                      ),
                                       onPressed: () {
                                         _deleteSingleScoreEntry(
-                                          playerIndexInDatabase, 
+                                          playerIndexInDatabase,
                                           reversedIndex,
                                           setSheetState,
                                         );
@@ -572,20 +651,24 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                 ],
               ),
             );
-          }
+          },
         );
       },
     );
   }
 
   // Deletes a single specific round entry out of the player's list
-  void _deleteSingleScoreEntry(int playerIdx, int scoreIdx, StateSetter setSheetState) async {
+  void _deleteSingleScoreEntry(
+    int playerIdx,
+    int scoreIdx,
+    StateSetter setSheetState,
+  ) async {
     if (_game == null) return;
 
     final sessionsList = _game!.sessions.toList();
     final currentMatch = sessionsList[widget.sessionIndex];
     final playersList = (currentMatch.players ?? <PlayerSession>[]).toList();
-    
+
     final targetPlayer = playersList[playerIdx];
     final updatedScores = targetPlayer.scores.toList();
 
@@ -619,7 +702,9 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
     if (existingNames.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Add at least one player before starting a rematch!')),
+        const SnackBar(
+          content: Text('Add at least one player before starting a rematch!'),
+        ),
       );
       return;
     }
@@ -654,7 +739,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
     // 4. NAVIGATION TRICK: Pop the current screen off the stack, and replace it
     // with a brand new viewport targeted at the last index of the updated list!
     final newSessionIndex = sessionsList.length - 1;
-    
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -666,7 +751,9 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
     );
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Started Match #$nextMatchNumber with existing players!')),
+      SnackBar(
+        content: Text('Started Match #$nextMatchNumber with existing players!'),
+      ),
     );
   }
 
@@ -678,17 +765,20 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
     final currentMatchSession = _game!.sessions[widget.sessionIndex];
     final basePlayers = currentMatchSession.players ?? <PlayerSession>[];
-    
-    final List<MapEntry<int, PlayerSession>> indexedPlayers = basePlayers.asMap().entries.toList();
+
+    final List<MapEntry<int, PlayerSession>> indexedPlayers = basePlayers
+        .asMap()
+        .entries
+        .toList();
 
     // Sort leaderboard by accumulated score total totals
     indexedPlayers.sort((a, b) {
       final totalA = _calculateTotalScore(a.value);
       final totalB = _calculateTotalScore(b.value);
       if (_game!.highestScoreWins) {
-        return totalB.compareTo(totalA); 
+        return totalB.compareTo(totalA);
       } else {
-        return totalA.compareTo(totalB); 
+        return totalA.compareTo(totalB);
       }
     });
 
@@ -703,9 +793,11 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
             Text(
               _game?.name ?? 'Board game',
               style: TextStyle(
-                fontSize: 13, 
+                fontSize: 13,
                 fontWeight: FontWeight.w400,
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), // Fades out the subtitle nicely
+                color: Theme.of(context).colorScheme.onSurface.withValues(
+                  alpha: 0.6,
+                ), // Fades out the subtitle nicely
               ),
             ),
           ],
@@ -720,14 +812,16 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
         ],
       ),
       body: indexedPlayers.isEmpty
-          ? const Center(child: Text('No players added yet. Tap + to add participants!'))
+          ? const Center(
+              child: Text('No players added yet. Tap + to add participants!'),
+            )
           : ListView.builder(
               itemCount: indexedPlayers.length,
               itemBuilder: (context, index) {
                 final entry = indexedPlayers[index];
                 final trueIndexInDatabase = entry.key;
                 final playerSession = entry.value;
-                
+
                 final playerName = playerSession.playerName ?? 'Unknown';
                 final totalScore = _calculateTotalScore(playerSession);
                 final rank = index + 1;
@@ -736,72 +830,105 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                 final totalRounds = playerSession.scores.length;
 
                 return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: rank == 1 ? Colors.amber : Colors.teal.shade100,
+                          backgroundColor: rank == 1
+                              ? Colors.amber
+                              : Colors.teal.shade100,
                           child: Text(
                             '#$rank',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: rank == 1 ? Colors.black : Colors.teal.shade900,
+                              color: rank == 1
+                                  ? Colors.black
+                                  : Colors.teal.shade900,
                             ),
                           ),
                         ),
-                        title: Text(playerName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        title: Text(
+                          playerName,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         subtitle: Text(
                           'Score: $totalScore',
-                          style: const TextStyle(
-                            color: Colors.grey,
-                          ),
+                          style: const TextStyle(color: Colors.grey),
                         ),
                         onTap: () {
-                          _showScoreEntryFormBottomSheet(playerSession, trueIndexInDatabase);
+                          _showScoreEntryFormBottomSheet(
+                            playerSession,
+                            trueIndexInDatabase,
+                          );
                         },
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.edit_outlined, color: Colors.blueGrey),
+                              icon: const Icon(
+                                Icons.edit_outlined,
+                                color: Colors.blueGrey,
+                              ),
                               tooltip: 'Edit Player',
                               onPressed: () {
-                                _showPlayerFormBottomSheet(playerIndexInDatabase: trueIndexInDatabase);
+                                _showPlayerFormBottomSheet(
+                                  playerIndexInDatabase: trueIndexInDatabase,
+                                );
                               },
                             ),
                             IconButton(
-                              icon: const Icon(Icons.history, color: Colors.blueGrey),
+                              icon: const Icon(
+                                Icons.history,
+                                color: Colors.blueGrey,
+                              ),
                               tooltip: 'View Score History',
                               onPressed: () {
-                                _showPlayerHistorySheet(playerSession, trueIndexInDatabase);
+                                _showPlayerHistorySheet(
+                                  playerSession,
+                                  trueIndexInDatabase,
+                                );
                               },
                             ),
                             IconButton(
-                              icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                color: Colors.redAccent,
+                              ),
                               tooltip: 'Remove Player',
                               onPressed: () {
-                                _showDeleteConfirmationDialog(trueIndexInDatabase, playerName);
+                                _showDeleteConfirmationDialog(
+                                  trueIndexInDatabase,
+                                  playerName,
+                                );
                               },
                             ),
                           ],
                         ),
                       ),
                       Divider(
-                        height: 1, 
+                        height: 1,
                         thickness: 0.5,
                         color: Colors.teal.shade800,
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 10.0,
+                        ),
                         child: Row(
                           children: [
                             // FIX: Swapped calendar icon for a round/layers icon to match the text context
                             Icon(
-                              Icons.layers_outlined, 
-                              size: 14, 
-                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                              Icons.layers_outlined,
+                              size: 14,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.4),
                             ),
                             const SizedBox(width: 6),
                             Text(
@@ -809,7 +936,9 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
-                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withValues(alpha: 0.6),
                               ),
                             ),
                           ],
@@ -821,7 +950,8 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
               },
             ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showPlayerFormBottomSheet, // Floating Action Button now strictly registers new names
+        onPressed:
+            _showPlayerFormBottomSheet, // Floating Action Button now strictly registers new names
         backgroundColor: Colors.teal,
         child: const Icon(Icons.add, color: Colors.white),
       ),

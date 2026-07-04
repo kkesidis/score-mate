@@ -14,10 +14,7 @@ void main() async {
   final dir = await getApplicationDocumentsDirectory();
 
   // 3. Open the database instance with our specific BoardGame collection schema
-  isar = await Isar.open(
-    [BoardGameSchema],
-    directory: dir.path,
-  );
+  isar = await Isar.open([BoardGameSchema], directory: dir.path);
 
   runApp(const ScoreMateApp());
 }
@@ -36,7 +33,7 @@ class ScoreMateApp extends StatelessWidget {
         useMaterial3: true,
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF0F0F0F),
-        colorScheme: ColorScheme.dark(
+        colorScheme: const ColorScheme.dark(
           primary: Colors.teal,
           error: Colors.redAccent,
         ),
@@ -44,17 +41,21 @@ class ScoreMateApp extends StatelessWidget {
           backgroundColor: Colors.transparent,
           elevation: 0,
           scrolledUnderElevation: 0,
-          titleTextStyle: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+          titleTextStyle: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
-        cardTheme: CardThemeData(  // FIX: Changed CardTheme to CardThemeData
-          color: const Color(0xFF1A1A1A), // (or Colors.white depending on the theme chosen)
+        cardTheme: CardThemeData(
+          // FIX: Changed CardTheme to CardThemeData
+          color: const Color(
+            0xFF1A1A1A,
+          ), // (or Colors.white depending on the theme chosen)
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: BorderSide(
-              color: Colors.teal.shade800,
-              width: 0.5,
-            ),
+            side: BorderSide(color: Colors.teal.shade800, width: 0.5),
           ),
         ),
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
