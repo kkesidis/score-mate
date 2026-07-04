@@ -88,65 +88,97 @@ class _GameListScreenState extends State<GameListScreen> {
       highestWins = existingGame.highestScoreWins;
     }
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true, // Allows the sheet to resize when keyboards push up
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            return AlertDialog(
-              title: Text(isEditing ? 'Edit Board Game' : 'Add New Board Game'),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: nameController,
-                      decoration: const InputDecoration(labelText: 'Game Name *'),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: descController,
-                      decoration: const InputDecoration(labelText: 'Description (Optional)'),
-                    ),
-                    const SizedBox(height: 15),
-                    SwitchListTile(
-                      title: const Text('Highest Score Wins'),
-                      subtitle: Text(highestWins ? 'Standard scoring' : 'Lowest score wins'),
-                      value: highestWins,
-                      onChanged: (bool value) {
-                        setDialogState(() {
-                          highestWins = value;
-                        });
-                      },
-                    ),
-                  ],
-                ),
+            return Padding(
+              padding: EdgeInsets.only(
+                top: 16.0,
+                left: 16.0,
+                right: 16.0,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16.0, // Keyboard safety
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (nameController.text.trim().isEmpty) return;
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isEditing ? 'Edit Board Game' : 'Add New Board Game',
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
+                  ),
 
-                    // If editing, reuse the old object so Isar overwrites the exact ID slot
-                    final gameToSave = isEditing ? existingGame : BoardGame();
-                    
-                    gameToSave.name = nameController.text.trim();
-                    gameToSave.description = descController.text.trim().isEmpty ? null : descController.text.trim();
-                    gameToSave.highestScoreWins = highestWins;
+                  const SizedBox(height: 10),
 
-                    await isar.writeTxn(() async {
-                      await isar.boardGames.put(gameToSave);
-                    });
+                  TextField(
+                    controller: nameController,
+                    decoration: const InputDecoration(labelText: 'Game Name *'),
+                  ),
 
-                    if (context.mounted) Navigator.pop(context);
-                  },
-                  child: Text(isEditing ? 'Save' : 'Add'),
-                ),
-              ],
+                  const SizedBox(height: 10),
+
+                  TextField(
+                    controller: descController,
+                    decoration: const InputDecoration(labelText: 'Description (Optional)'),
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  SwitchListTile(
+                    title: const Text('Highest Score Wins'),
+                    subtitle: Text(highestWins ? 'Standard scoring' : 'Lowest score wins'),
+                    value: highestWins,
+                    onChanged: (bool value) {
+                      setDialogState(() {
+                        highestWins = value;
+                      });
+                    },
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  OverflowBar(
+                    alignment: MainAxisAlignment.end,
+                    spacing: 8.0,       // Horizontal gap between buttons when side-by-side
+                    overflowSpacing: 8.0, // Vertical gap between buttons if they drop/stack vertically!
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancel'),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () async {
+                          if (nameController.text.trim().isEmpty) return;
+
+                          // If editing, reuse the old object so Isar overwrites the exact ID slot
+                          final gameToSave = isEditing ? existingGame : BoardGame();
+                          
+                          gameToSave.name = nameController.text.trim();
+                          gameToSave.description = descController.text.trim().isEmpty ? null : descController.text.trim();
+                          gameToSave.highestScoreWins = highestWins;
+
+                          await isar.writeTxn(() async {
+                            await isar.boardGames.put(gameToSave);
+                          });
+
+                          if (context.mounted) Navigator.pop(context);
+                        },
+                        child: Text(isEditing ? 'Save' : 'Add'),
+                      ),
+                    ]
+                  ),
+                ],
+              ),
             );
           },
         );
