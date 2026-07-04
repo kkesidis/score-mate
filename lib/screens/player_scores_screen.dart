@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:isar/isar.dart';
 import '../main.dart';
 import '../models/board_game.dart';
 
@@ -49,57 +48,88 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
     return playerSession.scores.fold(0, (sum, item) => sum + (item.value ?? 0));
   }
 
-  // 1. DIALOG: Adds a completely brand new player to the match session
   void _showAddPlayerDialog() {
     final nameController = TextEditingController();
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true, // Allows the sheet to resize when keyboards push up
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Add Player to Match'),
-          content: TextField(
-            controller: nameController,
-            decoration: const InputDecoration(
-              labelText: 'Player Name',
-              hintText: 'e.g., Alice',
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (_game == null || nameController.text.trim().isEmpty) return;
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                top: 16.0,
+                left: 16.0,
+                right: 16.0,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16.0, // Keyboard safety
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Player Name',
+                      hintText: 'e.g., Alice',
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 24),
 
-                final sessionsList = _game!.sessions.toList();
-                final currentMatchSession = sessionsList[widget.sessionIndex];
-                final playersList = (currentMatchSession.players ?? <PlayerSession>[]).toList();
+                  OverflowBar(
+                    alignment: MainAxisAlignment.end,
+                    spacing: 8.0,       // Horizontal gap between buttons when side-by-side
+                    overflowSpacing: 8.0, // Vertical gap between buttons if they drop/stack vertically!
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancel'),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () async {
+                          if (_game == null || nameController.text.trim().isEmpty) return;
 
-                // Create a completely new player profile starting with zero entries
-                final newPlayerSession = PlayerSession()
-                  ..playerName = nameController.text.trim()
-                  ..scores = [];
+                          final sessionsList = _game!.sessions.toList();
+                          final currentMatchSession = sessionsList[widget.sessionIndex];
+                          final playersList = (currentMatchSession.players ?? <PlayerSession>[]).toList();
 
-                playersList.add(newPlayerSession);
+                          // Create a completely new player profile starting with zero entries
+                          final newPlayerSession = PlayerSession()
+                            ..playerName = nameController.text.trim()
+                            ..scores = [];
 
-                currentMatchSession.players = playersList;
-                sessionsList[widget.sessionIndex] = currentMatchSession;
-                _game!.sessions = sessionsList;
+                          playersList.add(newPlayerSession);
 
-                await isar.writeTxn(() async {
-                  await isar.boardGames.put(_game!);
-                });
+                          currentMatchSession.players = playersList;
+                          sessionsList[widget.sessionIndex] = currentMatchSession;
+                          _game!.sessions = sessionsList;
 
-                if (context.mounted) Navigator.pop(context);
-              },
-              child: const Text('Add'),
-            ),
-          ],
+                          await isar.writeTxn(() async {
+                            await isar.boardGames.put(_game!);
+                          });
+
+                          if (context.mounted) Navigator.pop(context);
+                        },
+                        child: Text('Add'),
+                      ),
+                    ]
+                  ),
+                ]
+              )
+            );
+          }
         );
-      },
+      }
     );
   }
 
