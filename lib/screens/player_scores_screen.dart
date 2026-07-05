@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
 import '../models/board_game.dart';
+import '../models/app_theme.dart';
+import '../components/stylized_card.dart';
 
 enum ScoreOp { add, subtract }
 
@@ -117,8 +119,8 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                       const SizedBox(width: 8),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.teal,
-                          foregroundColor: Colors.white,
+                          backgroundColor: AppTheme.primary,
+                          foregroundColor: AppTheme.primaryForeground,
                         ),
                         onPressed: () async {
                           final textInput = nameController.text.trim();
@@ -281,13 +283,8 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                         currentOp = newSelection.first;
                       });
                     },
-                    style: SegmentedButton.styleFrom(
-                      selectedBackgroundColor: Colors.teal.withValues(
-                        alpha: 0.2,
-                      ),
-                      selectedForegroundColor: Colors.teal.shade300,
-                    ),
                   ),
+
                   const SizedBox(height: 20),
 
                   // 3. MAIN INPUT FIELD
@@ -300,10 +297,9 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                       prefixIcon: Icon(
                         currentOp == ScoreOp.add ? Icons.add : Icons.remove,
                         color: currentOp == ScoreOp.add
-                            ? Colors.green
-                            : Colors.red,
+                            ? AppTheme.accent
+                            : AppTheme.destructive,
                       ),
-                      border: const OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.number,
                   ),
@@ -315,7 +311,6 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                       labelText: 'Note / Description (Optional)',
                       hintText: 'e.g., Round 1, Penalty',
                       prefixIcon: Icon(Icons.notes_outlined),
-                      border: OutlineInputBorder(),
                     ),
                     textCapitalization: TextCapitalization.sentences,
                   ),
@@ -364,13 +359,14 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                       const SizedBox(width: 8),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.teal,
-                          foregroundColor: Colors.white,
+                          backgroundColor: AppTheme.primary,
+                          foregroundColor: AppTheme.primaryForeground,
                         ),
                         onPressed: () async {
                           if (_game == null ||
-                              scoreController.text.trim().isEmpty)
+                              scoreController.text.trim().isEmpty) {
                             return;
+                          }
 
                           final sessionsList = _game!.sessions.toList();
                           final currentMatchSession =
@@ -444,14 +440,21 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       label: Center(
         child: Text(
           '$prefix$value',
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            // Switches typography colors depending on the operational math state
+            color: isAdd 
+                ? AppTheme.secondaryForeground 
+                : AppTheme.destructiveForeground,
+          ),
         ),
       ),
-      side: BorderSide(
-        color: isAdd
-            ? Colors.green.withValues(alpha: 0.2)
-            : Colors.red.withValues(alpha: 0.2),
-      ),
+      // Solid structural background injection based on the operation type
+      backgroundColor: isAdd 
+          ? AppTheme.secondary 
+          : AppTheme.destructive,
+      // We completely strip the border side tinting line since we are using solid fills
+      side: BorderSide.none, 
       onPressed: () {
         setModalState(() {
           scoreController.text = value.toString();
@@ -479,8 +482,8 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-                foregroundColor: Colors.white,
+                backgroundColor: AppTheme.destructive,
+                foregroundColor: AppTheme.destructiveForeground,
               ),
               onPressed: () {
                 _deletePlayer(actualIndex);
@@ -560,7 +563,6 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.teal,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -586,12 +588,14 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                               return ListTile(
                                 leading: CircleAvatar(
                                   backgroundColor: (entry.value ?? 0) >= 0
-                                      ? Colors.teal.shade50
-                                      : Colors.red.shade50,
+                                      ? AppTheme.secondary
+                                      : AppTheme.destructive,
                                   child: Text(
                                     '#${reversedIndex + 1}',
                                     style: TextStyle(
-                                      color: Colors.teal.shade900,
+                                      color: (entry.value ?? 0) >= 0
+                                        ? AppTheme.secondaryForeground
+                                        : AppTheme.destructiveForeground,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -603,7 +607,10 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                                   ),
                                 ),
                                 subtitle: Text(
-                                  entry.description ?? 'No note provided.',
+                                  entry.description ?? '-',
+                                  style: const TextStyle(
+                                    color: AppTheme.mutedForeground
+                                  )
                                 ),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -612,7 +619,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                                     IconButton(
                                       icon: const Icon(
                                         Icons.edit_outlined,
-                                        color: Colors.teal,
+                                        color: AppTheme.primary,
                                         size: 20,
                                       ),
                                       onPressed: () {
@@ -630,7 +637,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                                     IconButton(
                                       icon: const Icon(
                                         Icons.delete_outline,
-                                        color: Colors.redAccent,
+                                        color: AppTheme.destructive,
                                         size: 20,
                                       ),
                                       onPressed: () {
@@ -829,7 +836,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                 // Show a mini tally of how many point entries they have logged total
                 final totalRounds = playerSession.scores.length;
 
-                return Card(
+                return StylizedCard(
                   margin: const EdgeInsets.symmetric(
                     horizontal: 10,
                     vertical: 5,
@@ -840,15 +847,15 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                       ListTile(
                         leading: CircleAvatar(
                           backgroundColor: rank == 1
-                              ? Colors.amber
-                              : Colors.teal.shade100,
+                              ? AppTheme.highestWins
+                              : AppTheme.lowestWins,
                           child: Text(
                             '#$rank',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: rank == 1
-                                  ? Colors.black
-                                  : Colors.teal.shade900,
+                                  ? AppTheme.highestWinsForeground
+                                  : AppTheme.lowestWinsForeground,
                             ),
                           ),
                         ),
@@ -858,7 +865,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                         ),
                         subtitle: Text(
                           'Score: $totalScore',
-                          style: const TextStyle(color: Colors.grey),
+                          style: const TextStyle(color: AppTheme.mutedForeground),
                         ),
                         onTap: () {
                           _showScoreEntryFormBottomSheet(
@@ -872,7 +879,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                             IconButton(
                               icon: const Icon(
                                 Icons.edit_outlined,
-                                color: Colors.blueGrey,
+                                color: AppTheme.primary,
                               ),
                               tooltip: 'Edit Player',
                               onPressed: () {
@@ -884,7 +891,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                             IconButton(
                               icon: const Icon(
                                 Icons.history,
-                                color: Colors.blueGrey,
+                                color: AppTheme.primary,
                               ),
                               tooltip: 'View Score History',
                               onPressed: () {
@@ -897,7 +904,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                             IconButton(
                               icon: const Icon(
                                 Icons.delete_outline,
-                                color: Colors.redAccent,
+                                color: AppTheme.destructive,
                               ),
                               tooltip: 'Remove Player',
                               onPressed: () {
@@ -910,11 +917,9 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                           ],
                         ),
                       ),
-                      Divider(
-                        height: 1,
-                        thickness: 0.5,
-                        color: Colors.teal.shade800,
-                      ),
+                      
+                      const SizedBox(height: 4),
+
                       Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16.0,
@@ -923,24 +928,46 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                         child: Row(
                           children: [
                             // FIX: Swapped calendar icon for a round/layers icon to match the text context
-                            Icon(
-                              Icons.layers_outlined,
-                              size: 14,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurface.withValues(alpha: 0.4),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              '$totalRounds rounds logged',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                // Standard translucent chip background: rgba(255, 255, 255, 0.07)
+                                color: const Color(0x12FFFFFF), 
+                                borderRadius: BorderRadius.circular(16),
                               ),
-                            ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min, // Wraps container tightly around content
+                                children: [
+                                  Icon(
+                                    Icons.layers_outlined,
+                                    size: 13,
+                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text.rich(
+                                    TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: '$totalRounds ',
+                                          style: const TextStyle(
+                                            color: AppTheme.primary,
+                                            fontWeight: FontWeight.w600, // Pop highlighting matching your other metric chips
+                                          ),
+                                        ),
+                                        const TextSpan(
+                                          text: 'rounds', // Simplified text to fit standard metadata patterns
+                                        ),
+                                      ],
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
                           ],
                         ),
                       ),
@@ -952,8 +979,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed:
             _showPlayerFormBottomSheet, // Floating Action Button now strictly registers new names
-        backgroundColor: Colors.teal,
-        child: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.add),
       ),
     );
   }

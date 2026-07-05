@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'models/board_game.dart';
+import 'models/app_theme.dart';
 import 'screens/game_list_screen.dart';
 
 late Isar isar;
@@ -32,10 +33,10 @@ class ScoreMateApp extends StatelessWidget {
       darkTheme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0F0F0F),
+        scaffoldBackgroundColor: AppTheme.background,
         colorScheme: const ColorScheme.dark(
-          primary: Colors.teal,
-          error: Colors.redAccent,
+          primary: AppTheme.primary,
+          error: AppTheme.destructive,
         ),
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.transparent,
@@ -44,24 +45,92 @@ class ScoreMateApp extends StatelessWidget {
           titleTextStyle: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: AppTheme.foreground,
           ),
         ),
         cardTheme: CardThemeData(
-          // FIX: Changed CardTheme to CardThemeData
-          color: const Color(
-            0xFF1A1A1A,
-          ), // (or Colors.white depending on the theme chosen)
+          color: AppTheme.card, // (or Colors.white depending on the theme chosen)
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: Colors.teal.shade800, width: 0.5),
           ),
         ),
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
-          backgroundColor: Color(0xFF00E676),
-          foregroundColor: Color(0xFF121212),
+          backgroundColor: AppTheme.accent,
+          foregroundColor: AppTheme.accentForeground,
           shape: CircleBorder(),
+        ),
+        segmentedButtonTheme: SegmentedButtonThemeData(
+          style: ButtonStyle(
+            // MaterialStateProperty (or WidgetStateProperty in newer Flutter versions) 
+            // ensures the border stays consistent across all button interactions
+            side: WidgetStateProperty.all(
+              const BorderSide(color: AppTheme.border, width: 1.0),
+            ),
+            shape: WidgetStateProperty.all(
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+              if (states.contains(WidgetState.selected)) {
+                return AppTheme.secondary; // Active selected fill color
+              }
+              return Colors.transparent; // Resting background fill color
+            }),
+
+            // 3. Text & Icon Colors (Foreground)
+            foregroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+              if (states.contains(WidgetState.selected)) {
+                return AppTheme.secondaryForeground; // Active contrast label color
+              }
+              // Resting label color with a clean opacity layer
+              return AppTheme.foreground;
+            }),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: AppTheme.inputBackground, // Your custom background color
+          
+          // The base styling rules for the fonts/labels inside the input
+          labelStyle: const TextStyle(
+            color: AppTheme.primary,
+            fontSize: 14,
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+
+          hintStyle: const TextStyle(
+            color: AppTheme.primary,
+            fontSize: 12,
+          ),
+
+          // 1. Default resting border state
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: AppTheme.border, width: 1.0),
+          ),
+
+          // 2. Explicitly enabled border (displays when textfield is editable but not clicked)
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: AppTheme.border, width: 1.0),
+          ),
+
+          // 3. Focused border (displays when the user is actively typing inside it)
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            // We bump the color or width slightly on focus for great UX interaction feedback
+            borderSide: const BorderSide(color: AppTheme.secondary, width: 1.5), 
+          ),
+
+          // 4. Error state border adjustments
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Colors.redAccent, width: 1.0),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
+          ),
         ),
       ),
     );

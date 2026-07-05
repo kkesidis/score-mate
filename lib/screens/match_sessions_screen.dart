@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../main.dart'; // Imports our global 'isar' instance
 import '../models/board_game.dart';
+import '../models/app_theme.dart';
+import '../components/stylized_card.dart';
 import 'player_scores_screen.dart';
 
 class MatchSessionsScreen extends StatefulWidget {
@@ -72,13 +74,14 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.teal,
+                      color: AppTheme.accent,
                     ),
                   ),
 
                   const SizedBox(height: 10),
 
                   TextField(
+                    autofocus: true,
                     controller: nameController,
                     decoration: InputDecoration(
                       labelText: isEditing
@@ -106,8 +109,8 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                       const SizedBox(width: 8),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.teal,
-                          foregroundColor: Colors.white,
+                          backgroundColor: AppTheme.primary,
+                          foregroundColor: AppTheme.primaryForeground,
                         ),
                         onPressed: () async {
                           final textInput = nameController.text.trim();
@@ -173,8 +176,8 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-                foregroundColor: Colors.white,
+                backgroundColor: AppTheme.destructive,
+                foregroundColor: AppTheme.destructiveForeground,
               ),
               onPressed: () {
                 _deleteSession(actualIndex);
@@ -290,7 +293,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                   }
                 }
 
-                return Card(
+                return StylizedCard(
                   margin: const EdgeInsets.symmetric(
                     horizontal: 10,
                     vertical: 6,
@@ -305,7 +308,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                         ),
                         subtitle: Text(
                           winnerText,
-                          style: const TextStyle(color: Colors.grey),
+                          style: const TextStyle(color: AppTheme.mutedForeground),
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -313,7 +316,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                             IconButton(
                               icon: const Icon(
                                 Icons.edit_outlined,
-                                color: Colors.teal,
+                                color: AppTheme.primary,
                               ),
                               tooltip: 'Rename Session',
                               onPressed: () {
@@ -323,7 +326,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                             IconButton(
                               icon: const Icon(
                                 Icons.delete_outline,
-                                color: Colors.redAccent,
+                                color: AppTheme.destructive,
                               ),
                               tooltip: 'Delete Session',
                               onPressed: () {
@@ -348,11 +351,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                         },
                       ),
 
-                      Divider(
-                        height: 1,
-                        thickness: 0.5,
-                        color: Colors.teal.shade800,
-                      ),
+                      const SizedBox(height: 4),
 
                       Padding(
                         padding: const EdgeInsets.symmetric(
@@ -361,55 +360,76 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                         ),
                         child: Row(
                           children: [
-                            Icon(
-                              Icons.calendar_today_outlined,
-                              size: 14,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurface.withValues(alpha: 0.4),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Played on: $sessionDate',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                // Match your standard chip background filter: rgba(255, 255, 255, 0.07)
+                                color: const Color(0x12FFFFFF), 
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min, // Wraps container tightly around the contents
+                                children: [
+                                  Icon(
+                                    Icons.calendar_today_outlined,
+                                    size: 13, // Slightly adjusted down for balanced layout scale
+                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    sessionDate, // Outputs just the raw dynamic date
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8.0,
+
+                            const SizedBox(width: 8),
+
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                // Match your standard chip background filter: rgba(255, 255, 255, 0.07)
+                                color: const Color(0x12FFFFFF), 
+                                borderRadius: BorderRadius.circular(16),
                               ),
-                              child: Text(
-                                '|',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Theme.of(context).colorScheme.onSurface
-                                      .withValues(alpha: 0.2),
-                                ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min, // Wraps container tightly around the content
+                                children: [
+                                  Icon(
+                                    Icons.people_outline,
+                                    size: 13, // Balanced layout scale matching the date chip
+                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text.rich(
+                                    TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: '${sessionPlayers.length} ',
+                                          style: const TextStyle(
+                                            color: AppTheme.primary,
+                                            fontWeight: FontWeight.w600, // Highlights the count number matching your first chip design
+                                          ),
+                                        ),
+                                        const TextSpan(
+                                          text: 'players',
+                                        ),
+                                      ],
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            Icon(
-                              Icons.people_outline,
-                              size: 14,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurface.withValues(alpha: 0.4),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${sessionPlayers.length} players',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withValues(alpha: 0.6),
-                              ),
-                            ),
+                            )
                           ],
                         ),
                       ),
@@ -420,8 +440,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showSessionDialog,
-        backgroundColor: Colors.teal,
-        child: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.add),
       ),
     );
   }
