@@ -310,7 +310,7 @@ class _GameListScreenState extends State<GameListScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('ScoreMate'),
+            const Text('ScoreDen'),
             const SizedBox(height: 2), // Tiny spacer between lines
             Text(
               '${_games.length} games tracked',

@@ -1,6 +1,6 @@
-# ScoreMate
+# ScoreDen
 
-A clean, modern scorekeeping and session-tracking application built with Flutter. ScoreMate simplifies game nights by logging match dynamics, player counts, ruleset types, and detailed history loops under a unified custom design scheme.
+A clean, modern scorekeeping and session-tracking application built with Flutter. ScoreDen simplifies game nights by logging match dynamics, player counts, ruleset types, and detailed history loops under a unified custom design scheme.
 
 ## Design Language & Core Tokens
 

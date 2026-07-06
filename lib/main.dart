@@ -17,16 +17,16 @@ void main() async {
   // 3. Open the database instance with our specific BoardGame collection schema
   isar = await Isar.open([BoardGameSchema], directory: dir.path);
 
-  runApp(const ScoreMateApp());
+  runApp(const ScoreDenApp());
 }
 
-class ScoreMateApp extends StatelessWidget {
-  const ScoreMateApp({super.key});
+class ScoreDenApp extends StatelessWidget {
+  const ScoreDenApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ScoreMate',
+      title: 'ScoreDen',
       debugShowCheckedModeBanner: false,
       home: const GameListScreen(),
       themeMode: ThemeMode.dark,

@@ -15,7 +15,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.score_mate"
+    namespace = "com.example.score_den"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -25,7 +25,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.kkesidis.scoremate"
+        applicationId = "com.kkesidis.scoreden"
         
         // 2. Force your app to lock to Android 14
         minSdk = 34
