@@ -28,7 +28,7 @@ android {
         applicationId = "com.kkesidis.scoreden"
         
         // 2. Force your app to lock to Android 14
-        minSdk = 35
+        minSdk = 34
         targetSdk = 35
         
         versionCode = flutter.versionCode
