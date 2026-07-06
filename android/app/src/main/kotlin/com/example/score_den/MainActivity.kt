@@ -1,4 +1,4 @@
-package com.example.score_mate
+package com.example.score_den
 
 import io.flutter.embedding.android.FlutterActivity
 
