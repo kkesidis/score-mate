@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "score_mate" "\0"
+            VALUE "FileDescription", "ScoreDen" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "score_mate" "\0"
+            VALUE "InternalName", "ScoreDen" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "score_mate.exe" "\0"
-            VALUE "ProductName", "score_mate" "\0"
+            VALUE "OriginalFilename", "ScoreDen.exe" "\0"
+            VALUE "ProductName", "ScoreDen" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
