@@ -97,7 +97,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                   TextField(
                     controller: nameController,
                     autofocus: true,
-                    textCapitalization: TextCapitalization.words,
+                    textCapitalization: TextCapitalization.sentences,
                     decoration: const InputDecoration(
                       labelText: 'Player Name',
                       hintText: 'e.g., Alice',

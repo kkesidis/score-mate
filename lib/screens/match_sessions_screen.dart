@@ -83,6 +83,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                   TextField(
                     autofocus: true,
                     controller: nameController,
+                    textCapitalization: TextCapitalization.sentences,
                     decoration: InputDecoration(
                       labelText: isEditing
                           ? 'Session Name'
@@ -219,7 +220,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Sessions'),
+            const Text('Matches'),
             const SizedBox(height: 2), // Tiny spacer between lines
             Text(
               _currentGame.name,

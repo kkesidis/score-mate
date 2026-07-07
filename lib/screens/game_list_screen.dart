@@ -129,6 +129,7 @@ class _GameListScreenState extends State<GameListScreen> {
                   TextField(
                     autofocus: true,
                     controller: nameController,
+                    textCapitalization: TextCapitalization.sentences,
                     decoration: const InputDecoration(
                       labelText: 'Game Name *',
                       hintText: 'e.g. Wingspan',
@@ -139,6 +140,7 @@ class _GameListScreenState extends State<GameListScreen> {
 
                   TextField(
                     controller: descController,
+                    textCapitalization: TextCapitalization.sentences,
                     decoration: const InputDecoration(
                       labelText: 'Description',
                       hintText: 'Short description of the game..',
