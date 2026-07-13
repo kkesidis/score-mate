@@ -3,6 +3,7 @@ import '../main.dart';
 import '../models/board_game.dart';
 import '../models/app_theme.dart';
 import '../components/stylized_card.dart';
+import '../helpers/custom_fab_location.dart';
 
 enum ScoreOp { add, subtract }
 
@@ -65,6 +66,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useRootNavigator: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -205,6 +207,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useRootNavigator: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -528,8 +531,8 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
   ) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled:
-          true, // Allows the sheet to resize when keyboards push up
+      isScrollControlled: true, // Allows the sheet to resize when keyboards push up
+      useRootNavigator: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -976,6 +979,10 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                 );
               },
             ),
+      floatingActionButtonLocation: const CustomFabLocation(
+        offsetY: 80.0, 
+        offsetX: 6.0,
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed:
             _showPlayerFormBottomSheet, // Floating Action Button now strictly registers new names

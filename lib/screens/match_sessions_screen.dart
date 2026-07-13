@@ -4,6 +4,8 @@ import '../models/board_game.dart';
 import '../models/app_theme.dart';
 import '../components/stylized_card.dart';
 import 'dart:async';
+import '../helpers/custom_fab_location.dart';
+import 'package:go_router/go_router.dart';
 
 class MatchSessionsScreen extends StatefulWidget {
   final int gameId;
@@ -63,8 +65,8 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
 
     showModalBottomSheet(
       context: context,
-      isScrollControlled:
-          true, // Allows the sheet to resize when keyboards push up
+      isScrollControlled: true, // Allows the sheet to resize when keyboards push up
+      useRootNavigator: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -363,15 +365,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                           ],
                         ),
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => PlayerScoresScreen(
-                                gameId: _game!.id,
-                                sessionIndex: reversedIndex,
-                              ),
-                            ),
-                          );
+                          context.go('/home/${_game!.id}/sessions/$reversedIndex');
                         },
                       ),
 
@@ -462,6 +456,10 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                 );
               },
             ),
+      floatingActionButtonLocation: const CustomFabLocation(
+        offsetY: 80.0, 
+        offsetX: 6.0,
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showSessionDialog,
         child: const Icon(Icons.add),

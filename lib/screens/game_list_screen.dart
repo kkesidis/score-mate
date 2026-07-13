@@ -4,7 +4,8 @@ import '../main.dart';
 import '../models/board_game.dart';
 import '../models/app_theme.dart';
 import '../components/stylized_card.dart';
-import 'match_sessions_screen.dart';
+import '../helpers/custom_fab_location.dart';
+import 'package:go_router/go_router.dart';
 
 class GameListScreen extends StatefulWidget {
   const GameListScreen({super.key});
@@ -95,8 +96,8 @@ class _GameListScreenState extends State<GameListScreen> {
 
     showModalBottomSheet(
       context: context,
-      isScrollControlled:
-          true, // Allows the sheet to resize when keyboards push up
+      isScrollControlled: true, // Allows the sheet to resize when keyboards push up
+      useRootNavigator: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -377,13 +378,7 @@ class _GameListScreenState extends State<GameListScreen> {
                           ],
                         ),
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  MatchSessionsScreen(gameId: game.id),
-                            ),
-                          );
+                          context.go('/home/${game.id}/sessions');
                         },
                       ),
 
@@ -474,6 +469,10 @@ class _GameListScreenState extends State<GameListScreen> {
                 );
               },
             ),
+      floatingActionButtonLocation: const CustomFabLocation(
+        offsetY: 80.0, 
+        offsetX: 6.0,
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () =>
             _showGameDialog(), // Calls dialog without arguments (Defaults to Add Mode)

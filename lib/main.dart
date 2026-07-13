@@ -3,7 +3,7 @@ import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'models/board_game.dart';
 import 'models/app_theme.dart';
-import 'screens/game_list_screen.dart';
+import 'router.dart';
 
 late Isar isar;
 
@@ -25,10 +25,10 @@ class ScoreDenApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'ScoreDen',
       debugShowCheckedModeBanner: false,
-      home: const GameListScreen(),
+      routerConfig: appRouter,
       themeMode: ThemeMode.dark,
       darkTheme: ThemeData(
         useMaterial3: true,
