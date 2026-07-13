@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../models/app_theme.dart';
+import '../l10n/app_localizations.dart';
 
 class ScaffoldWithNavBar extends StatelessWidget {
   const ScaffoldWithNavBar({
@@ -75,28 +76,28 @@ class ScaffoldWithNavBar extends StatelessWidget {
                       letterSpacing: 0.3,
                     ),
                     
-                    items: const [
+                    items: [
                       BottomNavigationBarItem(
-                        icon: Padding(
+                        icon: const Padding(
                           padding: EdgeInsets.only(bottom: 4.0),
                           child: Icon(Icons.home_outlined),
                         ),
-                        activeIcon: Padding(
+                        activeIcon: const Padding(
                           padding: EdgeInsets.only(bottom: 4.0),
                           child: Icon(Icons.home),
                         ),
-                        label: 'Home',
+                        label: AppLocalizations.of(context)!.home,
                       ),
                       BottomNavigationBarItem(
-                        icon: Padding(
+                        icon: const Padding(
                           padding: EdgeInsets.only(bottom: 4.0),
                           child: Icon(Icons.settings_outlined),
                         ),
-                        activeIcon: Padding(
+                        activeIcon: const Padding(
                           padding: EdgeInsets.only(bottom: 4.0),
                           child: Icon(Icons.settings),
                         ),
-                        label: 'Settings',
+                        label: AppLocalizations.of(context)!.settings,
                       ),
                     ],
                   ),

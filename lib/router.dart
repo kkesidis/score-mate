@@ -1,11 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:score_den/screens/language_screen.dart';
 import 'screens/game_list_screen.dart';
 import 'screens/match_sessions_screen.dart';
 import 'screens/player_scores_screen.dart';
+import 'screens/settings_screen.dart';
 import 'components/navigation_bar.dart';
-
-class SettingsScreen extends StatelessWidget { const SettingsScreen({super.key}); @override Widget build(BuildContext context) => const Scaffold(body: Center(child: Text('Settings'))); }
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/home',
@@ -54,6 +53,14 @@ final GoRouter appRouter = GoRouter(
             GoRoute(
               path: '/settings',
               builder: (context, state) => const SettingsScreen(),
+              routes: [
+                GoRoute(
+                  path: 'language',
+                  builder: (context, state) {
+                    return const LanguageScreen();
+                  },
+                )
+              ]
             ),
           ],
         ),

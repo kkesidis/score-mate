@@ -75,3 +75,12 @@ flutter build apk --release
 # Assemble an optimized distribution build bundle targeting iOS devices (Requires a macOS workstation)
 flutter build ipa
 ```
+
+### 5. Localization
+
+The application is using `flutter_localizations` to provide translations. 
+
+```dart
+# Generate localizations, useful when making changes to the files
+flutter gen-l10n
+```

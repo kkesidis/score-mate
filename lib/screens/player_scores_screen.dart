@@ -4,6 +4,7 @@ import '../models/board_game.dart';
 import '../models/app_theme.dart';
 import '../components/stylized_card.dart';
 import '../helpers/custom_fab_location.dart';
+import '../l10n/app_localizations.dart';
 
 enum ScoreOp { add, subtract }
 
@@ -60,7 +61,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       if (_game == null) return;
       final currentMatchSession = _game!.sessions[widget.sessionIndex];
       final targetPlayer = currentMatchSession.players[playerIndexInDatabase];
-      nameController.text = targetPlayer.playerName ?? '';
+      nameController.text = targetPlayer.playerName ?? AppLocalizations.of(context)!.genericPlayerName;
     }
 
     showModalBottomSheet(
@@ -88,7 +89,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                     CrossAxisAlignment.stretch, // Stretches elements uniformly
                 children: [
                   Text(
-                    isEditing ? 'Rename Player' : 'Add New Player',
+                    isEditing ? AppLocalizations.of(context)!.renamePlayer : AppLocalizations.of(context)!.addPlayer,
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -100,10 +101,10 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                     controller: nameController,
                     autofocus: true,
                     textCapitalization: TextCapitalization.sentences,
-                    decoration: const InputDecoration(
-                      labelText: 'Player Name',
-                      hintText: 'e.g., Alice',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.playerNameLabel,
+                      hintText: AppLocalizations.of(context)!.playerNameHint,
+                      border: const OutlineInputBorder(),
                     ),
                   ),
 
@@ -116,7 +117,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                     children: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
+                        child: Text(AppLocalizations.of(context)!.cancel),
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton(
@@ -160,7 +161,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
                           if (context.mounted) Navigator.pop(context);
                         },
-                        child: Text(isEditing ? 'Save' : 'Add'),
+                        child: Text(isEditing ? AppLocalizations.of(context)!.save : AppLocalizations.of(context)!.add),
                       ),
                     ],
                   ),
@@ -244,8 +245,8 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                     children: [
                       Text(
                         isEditing
-                            ? 'Edit Entry for ${player.playerName}'
-                            : (player.playerName ?? 'Player'),
+                            ? AppLocalizations.of(context)!.editScore(player.playerName ?? AppLocalizations.of(context)!.genericPlayerName)
+                            : (player.playerName ?? AppLocalizations.of(context)!.genericPlayerName),
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -253,7 +254,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Score transformation: $currentScore → $newScore',
+                        '${AppLocalizations.of(context)!.scoreChange}: $currentScore → $newScore',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
@@ -268,16 +269,16 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
                   // 2. THE OPERATION CONTROLLER (ADD / SUBTRACT)
                   SegmentedButton<ScoreOp>(
-                    segments: const <ButtonSegment<ScoreOp>>[
+                    segments: <ButtonSegment<ScoreOp>>[
                       ButtonSegment<ScoreOp>(
                         value: ScoreOp.add,
-                        label: Text('Add'),
-                        icon: Icon(Icons.add),
+                        label: Text(AppLocalizations.of(context)!.add),
+                        icon: const Icon(Icons.add),
                       ),
                       ButtonSegment<ScoreOp>(
                         value: ScoreOp.subtract,
-                        label: Text('Subtract'),
-                        icon: Icon(Icons.remove),
+                        label: Text(AppLocalizations.of(context)!.subtract),
+                        icon: const Icon(Icons.remove),
                       ),
                     ],
                     selected: <ScoreOp>{currentOp},
@@ -295,8 +296,8 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                     controller: scoreController,
                     autofocus: true,
                     decoration: InputDecoration(
-                      labelText: 'Points',
-                      hintText: 'e.g., 5',
+                      labelText: AppLocalizations.of(context)!.pointsLabel,
+                      hintText: AppLocalizations.of(context)!.pointsHint,
                       prefixIcon: Icon(
                         currentOp == ScoreOp.add ? Icons.add : Icons.remove,
                         color: currentOp == ScoreOp.add
@@ -310,10 +311,10 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
                   TextField(
                     controller: descController,
-                    decoration: const InputDecoration(
-                      labelText: 'Note / Description (Optional)',
-                      hintText: 'e.g., Round 1, Penalty',
-                      prefixIcon: Icon(Icons.notes_outlined),
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.pointDescriptionLabel,
+                      hintText: AppLocalizations.of(context)!.pointDescriptionHint,
+                      prefixIcon: const Icon(Icons.notes_outlined),
                     ),
                     textCapitalization: TextCapitalization.sentences,
                   ),
@@ -321,7 +322,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
                   // 4. QUICK SELECT CHIPS
                   Text(
-                    'Quick Select',
+                    AppLocalizations.of(context)!.quickSelect,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
@@ -357,7 +358,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                     children: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
+                        child: Text(AppLocalizations.of(context)!.cancel),
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton(
@@ -416,7 +417,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
                           if (context.mounted) Navigator.pop(context);
                         },
-                        child: Text(isEditing ? 'Save' : 'Log Score'),
+                        child: Text(isEditing ? AppLocalizations.of(context)!.save : AppLocalizations.of(context)!.logScore),
                       ),
                     ],
                   ),
@@ -474,14 +475,14 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Remove Player'),
+          title: Text(AppLocalizations.of(context)!.removePlayerTitle),
           content: Text(
-            'Are you sure you want to remove "$playerName" from this match? This will permanently delete all their logged scores for this session.',
+            AppLocalizations.of(context)!.removePlayerDescription(playerName)
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -492,7 +493,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                 _deletePlayer(actualIndex);
                 Navigator.pop(context); // Close the dialog
               },
-              child: const Text('Remove'),
+              child: Text(AppLocalizations.of(context)!.remove),
             ),
           ],
         );
@@ -520,7 +521,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Player removed from match')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.playerRemoved)),
       );
     }
   }
@@ -562,7 +563,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "${livePlayer.playerName}'s Score Log",
+                    AppLocalizations.of(context)!.scoreHistory(livePlayer.playerName ?? AppLocalizations.of(context)!.genericPlayerName),
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -570,10 +571,10 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                   ),
                   const SizedBox(height: 10),
                   scores.isEmpty
-                      ? const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 20),
+                      ? Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 20),
                           child: Center(
-                            child: Text('No scores logged yet for this match.'),
+                            child: Text(AppLocalizations.of(context)!.noScoresYet),
                           ),
                         )
                       : Flexible(
@@ -604,13 +605,13 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                                   ),
                                 ),
                                 title: Text(
-                                  '$valueString points',
+                                  '$valueString ${AppLocalizations.of(context)!.points}',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 subtitle: Text(
-                                  entry.description ?? '-',
+                                  entry.description ?? AppLocalizations.of(context)!.notAvailable,
                                   style: const TextStyle(
                                     color: AppTheme.mutedForeground
                                   )
@@ -712,8 +713,8 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
     if (existingNames.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Add at least one player before starting a rematch!'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.addPlayersBeforeRematch),
         ),
       );
       return;
@@ -731,7 +732,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
     }).toList();
 
     final newMatchSession = MatchSession()
-      ..name = 'Match #$nextMatchNumber'
+      ..name = AppLocalizations.of(context)!.indexedSession(nextMatchNumber)
       ..dateTime = DateTime.now()
       ..players = cleanRematchPlayers;
 
@@ -762,7 +763,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Started Match #$nextMatchNumber with existing players!'),
+        content: Text(AppLocalizations.of(context)!.startedRematch(nextMatchNumber)),
       ),
     );
   }
@@ -798,10 +799,10 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(currentMatchSession.name ?? 'Match Scores'),
+            Text(currentMatchSession.name ?? AppLocalizations.of(context)!.sessionScores),
             const SizedBox(height: 2), // Tiny spacer between lines
             Text(
-              _game?.name ?? 'Board game',
+              _game?.name ?? AppLocalizations.of(context)!.boardGame,
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
@@ -816,14 +817,14 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
           if (basePlayers.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.replay),
-              tooltip: 'Rematch (Same Players)',
+              tooltip: AppLocalizations.of(context)!.rematch,
               onPressed: () => _startRematch(basePlayers),
             ),
         ],
       ),
       body: indexedPlayers.isEmpty
-          ? const Center(
-              child: Text('No players added yet. Tap + to add participants!'),
+          ? Center(
+              child: Text(AppLocalizations.of(context)!.noPlayersAddedYet),
             )
           : ListView.builder(
               itemCount: indexedPlayers.length,
@@ -832,7 +833,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                 final trueIndexInDatabase = entry.key;
                 final playerSession = entry.value;
 
-                final playerName = playerSession.playerName ?? 'Unknown';
+                final playerName = playerSession.playerName ?? AppLocalizations.of(context)!.genericPlayerName;
                 final totalScore = _calculateTotalScore(playerSession);
                 final rank = index + 1;
 
@@ -867,7 +868,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: Text(
-                          'Score: $totalScore',
+                          '${AppLocalizations.of(context)!.score}: $totalScore',
                           style: const TextStyle(color: AppTheme.mutedForeground),
                         ),
                         onTap: () {
@@ -884,7 +885,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                                 Icons.edit_outlined,
                                 color: AppTheme.primary,
                               ),
-                              tooltip: 'Edit Player',
+                              tooltip: AppLocalizations.of(context)!.editPlayer,
                               onPressed: () {
                                 _showPlayerFormBottomSheet(
                                   playerIndexInDatabase: trueIndexInDatabase,
@@ -896,7 +897,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                                 Icons.history,
                                 color: AppTheme.primary,
                               ),
-                              tooltip: 'View Score History',
+                              tooltip: AppLocalizations.of(context)!.viewScoreHistory,
                               onPressed: () {
                                 _showPlayerHistorySheet(
                                   playerSession,
@@ -909,7 +910,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                                 Icons.delete_outline,
                                 color: AppTheme.destructive,
                               ),
-                              tooltip: 'Remove Player',
+                              tooltip: AppLocalizations.of(context)!.removePlayer,
                               onPressed: () {
                                 _showDeleteConfirmationDialog(
                                   trueIndexInDatabase,
@@ -957,8 +958,8 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                                             fontWeight: FontWeight.w600, // Pop highlighting matching your other metric chips
                                           ),
                                         ),
-                                        const TextSpan(
-                                          text: 'rounds', // Simplified text to fit standard metadata patterns
+                                        TextSpan(
+                                          text: AppLocalizations.of(context)!.rounds, // Simplified text to fit standard metadata patterns
                                         ),
                                       ],
                                       style: TextStyle(

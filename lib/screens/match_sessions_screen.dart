@@ -6,6 +6,7 @@ import '../components/stylized_card.dart';
 import 'dart:async';
 import '../helpers/custom_fab_location.dart';
 import 'package:go_router/go_router.dart';
+import '../l10n/app_localizations.dart';
 
 class MatchSessionsScreen extends StatefulWidget {
   final int gameId;
@@ -87,7 +88,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isEditing ? 'Rename Match Session' : 'New Match Session',
+                    isEditing ? AppLocalizations.of(context)!.renameSession : AppLocalizations.of(context)!.newSession,
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -102,12 +103,10 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                     controller: nameController,
                     textCapitalization: TextCapitalization.sentences,
                     decoration: InputDecoration(
-                      labelText: isEditing
-                          ? 'Session Name'
-                          : 'Session Name (Optional)',
+                      labelText: AppLocalizations.of(context)!.sessionNameLabel,
                       hintText: isEditing
                           ? null
-                          : 'Defaults to "Match #${_game!.sessions.length + 1}"',
+                          : AppLocalizations.of(context)!.sessionNameHint(_game!.sessions.length + 1),
                     ),
                   ),
 
@@ -122,7 +121,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                     children: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
+                        child: Text(AppLocalizations.of(context)!.cancel),
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton(
@@ -147,7 +146,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                             final nextMatchNumber =
                                 _game!.sessions.length + 1;
                             final sessionName = textInput.isEmpty
-                                ? 'Match #$nextMatchNumber'
+                                ? AppLocalizations.of(context)!.indexedSession(nextMatchNumber)
                                 : textInput;
 
                             final newSession = MatchSession()
@@ -165,7 +164,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
 
                           if (context.mounted) Navigator.pop(context);
                         },
-                        child: Text(isEditing ? 'Save' : 'Add'),
+                        child: Text(isEditing ? AppLocalizations.of(context)!.save : AppLocalizations.of(context)!.add),
                       ),
                     ],
                   ),
@@ -183,14 +182,14 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Delete Match Session'),
+          title: Text(AppLocalizations.of(context)!.deleteSessionTitle),
           content: Text(
-            'Are you sure you want to delete "$sessionName"? This will erase all player scores for this match.',
+            AppLocalizations.of(context)!.deleteSessionDescription(sessionName),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -201,7 +200,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                 _deleteSession(actualIndex);
                 Navigator.pop(context);
               },
-              child: const Text('Delete'),
+              child: Text(AppLocalizations.of(context)!.delete),
             ),
           ],
         );
@@ -222,16 +221,16 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
     if (mounted) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Match session removed')));
+      ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.sessionRemoved)));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     if (_game == null) {
-      return const Scaffold(
+      return Scaffold(
         body: Center(
-          child: Text('Something went wrong and we couldn\'t find you game.'),
+          child: Text(AppLocalizations.of(context)!.couldNotFindGame),
         ),
       );
     }
@@ -245,7 +244,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Matches'),
+            Text(AppLocalizations.of(context)!.sessionsTitle),
             const SizedBox(height: 2), // Tiny spacer between lines
             Text(
               _game!.name,
@@ -261,7 +260,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
         ),
       ),
       body: sessions.isEmpty
-          ? const Center(child: Text('No matches recorded for this game yet.'))
+          ? Center(child: Text(AppLocalizations.of(context)!.noSessionsYet))
           : ListView.builder(
               itemCount: sessions.length,
               itemBuilder: (context, index) {
@@ -273,15 +272,15 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
 
                 // Use the true list placement index for the default naming fallback
                 final sessionName =
-                    session.name ?? 'Match #${reversedIndex + 1}';
+                    session.name ?? AppLocalizations.of(context)!.indexedSession(reversedIndex + 1);
 
                 final sessionDate = session.dateTime != null
                     ? '${session.dateTime!.day}/${session.dateTime!.month}/${session.dateTime!.year}'
-                    : 'Unknown Date';
+                    : AppLocalizations.of(context)!.notAvailable;
 
                 final sessionPlayers = session.players ?? [];
 
-                String winnerText = 'No winner yet';
+                String winnerText = AppLocalizations.of(context)!.noWinnerYet;
                 if (sessionPlayers.isNotEmpty) {
                   final highestScoreWins = _game!.highestScoreWins;
 
@@ -308,14 +307,14 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                   // Collect all players who hit that exact winning score target
                   final winners = playerScores.entries
                       .where((entry) => entry.value == winningScore)
-                      .map((entry) => entry.key.playerName ?? 'Unknown')
+                      .map((entry) => entry.key.playerName ?? AppLocalizations.of(context)!.notAvailable)
                       .toList();
 
                   // Format the output string depending on if it's a solo victory or a tie!
                   if (winners.length > 1) {
-                    winnerText = 'Tie: ${winners.join(', ')} ($winningScore)';
+                    winnerText = '${AppLocalizations.of(context)!.tie}: ${winners.join(', ')} ($winningScore)';
                   } else {
-                    winnerText = 'Winner: ${winners.first} ($winningScore)';
+                    winnerText = '${AppLocalizations.of(context)!.winner}: ${winners.first} ($winningScore)';
                   }
                 }
 
@@ -344,7 +343,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                                 Icons.edit_outlined,
                                 color: AppTheme.primary,
                               ),
-                              tooltip: 'Rename Session',
+                              tooltip: AppLocalizations.of(context)!.renameSession,
                               onPressed: () {
                                 _showSessionDialog(actualIndex: reversedIndex);
                               },
@@ -354,7 +353,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                                 Icons.delete_outline,
                                 color: AppTheme.destructive,
                               ),
-                              tooltip: 'Delete Session',
+                              tooltip: AppLocalizations.of(context)!.deleteSession,
                               onPressed: () {
                                 _showDeleteConfirmationDialog(
                                   reversedIndex,
@@ -434,8 +433,8 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                                             fontWeight: FontWeight.w600, // Highlights the count number matching your first chip design
                                           ),
                                         ),
-                                        const TextSpan(
-                                          text: 'players',
+                                        TextSpan(
+                                          text: AppLocalizations.of(context)!.players,
                                         ),
                                       ],
                                       style: TextStyle(
