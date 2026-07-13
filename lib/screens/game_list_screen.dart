@@ -381,7 +381,7 @@ class _GameListScreenState extends State<GameListScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (context) =>
-                                  MatchSessionsScreen(game: game),
+                                  MatchSessionsScreen(gameId: game.id),
                             ),
                           );
                         },

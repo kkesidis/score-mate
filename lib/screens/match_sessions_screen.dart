@@ -3,38 +3,53 @@ import '../main.dart'; // Imports our global 'isar' instance
 import '../models/board_game.dart';
 import '../models/app_theme.dart';
 import '../components/stylized_card.dart';
-import 'player_scores_screen.dart';
+import 'dart:async';
 
 class MatchSessionsScreen extends StatefulWidget {
-  final BoardGame game;
+  final int gameId;
 
-  const MatchSessionsScreen({super.key, required this.game});
+  const MatchSessionsScreen({super.key, required this.gameId});
 
   @override
   State<MatchSessionsScreen> createState() => _MatchSessionsScreenState();
 }
 
 class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
-  // We keep a local reference to the game object so we can refresh its data
-  late BoardGame _currentGame;
+  BoardGame? _game;
+  StreamSubscription? _dbSubscription;
 
   @override
   void initState() {
     super.initState();
-    _currentGame = widget.game;
+    _loadGameData();
     _listenToDatabaseChanges();
+  }
+
+  void _loadGameData() async {
+    final game = await isar.boardGames.get(widget.gameId);
+    if (mounted) {
+      setState(() {
+        _game = game;
+      });
+    }
   }
 
   // Set up a listener so if the parent game updates, this screen reflects it instantly
   void _listenToDatabaseChanges() {
-    isar.boardGames.watchObjectLazy(_currentGame.id).listen((_) async {
-      final updatedGame = await isar.boardGames.get(_currentGame.id);
+    _dbSubscription = isar.boardGames.watchObjectLazy(widget.gameId).listen((_) async {
+      final updatedGame = await isar.boardGames.get(widget.gameId);
       if (updatedGame != null && mounted) {
         setState(() {
-          _currentGame = updatedGame;
+          _game = updatedGame;
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _dbSubscription?.cancel(); // <-- Stop listening when screen is destroyed
+    super.dispose();
   }
 
   void _showSessionDialog({int? actualIndex}) {
@@ -42,7 +57,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
     final isEditing = actualIndex != null;
 
     if (isEditing) {
-      final existingSession = _currentGame.sessions[actualIndex];
+      final existingSession = _game!.sessions[actualIndex];
       nameController.text = existingSession.name ?? '';
     }
 
@@ -90,7 +105,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                           : 'Session Name (Optional)',
                       hintText: isEditing
                           ? null
-                          : 'Defaults to "Match #${_currentGame.sessions.length + 1}"',
+                          : 'Defaults to "Match #${_game!.sessions.length + 1}"',
                     ),
                   ),
 
@@ -119,7 +134,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                           // Edit guard: don't let them clear out an existing name to empty string
                           if (isEditing && textInput.isEmpty) return;
 
-                          final updatedSessions = _currentGame.sessions
+                          final updatedSessions = _game!.sessions
                               .toList();
 
                           if (isEditing) {
@@ -128,7 +143,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                           } else {
                             // 2B. EXECUTE TRANSACTION CREATE INSERTION ROUTINE
                             final nextMatchNumber =
-                                _currentGame.sessions.length + 1;
+                                _game!.sessions.length + 1;
                             final sessionName = textInput.isEmpty
                                 ? 'Match #$nextMatchNumber'
                                 : textInput;
@@ -141,9 +156,9 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                           }
 
                           // 3. PERSIST THE SESSION LIST ARRAY STATE CHUNK
-                          _currentGame.sessions = updatedSessions;
+                          _game!.sessions = updatedSessions;
                           await isar.writeTxn(() async {
-                            await isar.boardGames.put(_currentGame);
+                            await isar.boardGames.put(_game!);
                           });
 
                           if (context.mounted) Navigator.pop(context);
@@ -194,12 +209,12 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
 
   // 3. ACTUAL ISAR DELETE TRANSACTION
   void _deleteSession(int actualIndex) async {
-    final updatedSessions = _currentGame.sessions.toList();
+    final updatedSessions = _game!.sessions.toList();
     updatedSessions.removeAt(actualIndex); // Pull it out of the array slot
-    _currentGame.sessions = updatedSessions;
+    _game!.sessions = updatedSessions;
 
     await isar.writeTxn(() async {
-      await isar.boardGames.put(_currentGame);
+      await isar.boardGames.put(_game!);
     });
 
     if (mounted) {
@@ -211,8 +226,16 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_game == null) {
+      return const Scaffold(
+        body: Center(
+          child: Text('Something went wrong and we couldn\'t find you game.'),
+        ),
+      );
+    }
+
     // Read the list from our dynamically updated local game variable
-    final sessions = _currentGame.sessions;
+    final sessions = _game!.sessions;
 
     return Scaffold(
       appBar: AppBar(
@@ -223,7 +246,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
             const Text('Matches'),
             const SizedBox(height: 2), // Tiny spacer between lines
             Text(
-              _currentGame.name,
+              _game!.name,
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
@@ -258,7 +281,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
 
                 String winnerText = 'No winner yet';
                 if (sessionPlayers.isNotEmpty) {
-                  final highestScoreWins = _currentGame.highestScoreWins;
+                  final highestScoreWins = _game!.highestScoreWins;
 
                   // Create a map matching each player to their calculated total score
                   final playerScores = <PlayerSession, int>{};
@@ -344,7 +367,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => PlayerScoresScreen(
-                                gameId: _currentGame.id,
+                                gameId: _game!.id,
                                 sessionIndex: reversedIndex,
                               ),
                             ),
