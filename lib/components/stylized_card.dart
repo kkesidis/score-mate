@@ -27,7 +27,7 @@ class StylizedCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             // High opacity color that softens as it blurs outwards
-            color: finalShadowColor.withValues(alpha: 0.25), 
+            color: finalShadowColor, 
             blurRadius: blurRadius,
             spreadRadius: -1, // Shrinks the shadow slightly so it doesn't peek over the top/bottom
             // Shift x by -5 to cast the glow left. Keep y at 0 to anchor vertically.

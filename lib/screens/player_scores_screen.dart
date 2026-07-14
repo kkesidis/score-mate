@@ -5,6 +5,7 @@ import '../models/app_theme.dart';
 import '../components/stylized_card.dart';
 import '../helpers/custom_fab_location.dart';
 import '../l10n/app_localizations.dart';
+import '../components/color_picker_field.dart';
 
 enum ScoreOp { add, subtract }
 
@@ -55,6 +56,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
   void _showPlayerFormBottomSheet({int? playerIndexInDatabase}) {
     final nameController = TextEditingController();
     final bool isEditing = playerIndexInDatabase != null;
+    Color _currentColor = AppTheme.palette.first;
 
     // 1. SETUP WORKFLOW MODE CONDITIONS
     if (isEditing) {
@@ -62,6 +64,9 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       final currentMatchSession = _game!.sessions[widget.sessionIndex];
       final targetPlayer = currentMatchSession.players[playerIndexInDatabase];
       nameController.text = targetPlayer.playerName ?? AppLocalizations.of(context)!.genericPlayerName;
+
+      final inheritedColor = targetPlayer.playerColorValue ?? _game?.colorValue;
+      _currentColor = inheritedColor != null ? Color(inheritedColor) : _currentColor;
     }
 
     showModalBottomSheet(
@@ -108,6 +113,15 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                     ),
                   ),
 
+                  const SizedBox(height: 10),
+
+                  ColorPickerField(
+                    initialColor: _currentColor,
+                    onColorSelected: (newColor) {
+                      _currentColor = newColor; 
+                    },
+                  ),
+
                   const SizedBox(height: 24),
 
                   OverflowBar(
@@ -141,11 +155,13 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                             final targetPlayer =
                                 playersList[playerIndexInDatabase];
                             targetPlayer.playerName = textInput;
+                            targetPlayer.playerColorValue = _currentColor.toARGB32();
                             playersList[playerIndexInDatabase] = targetPlayer;
                           } else {
                             // 2B. APPEND A NEW PLAYER PROFILE
                             final newPlayerSession = PlayerSession()
                               ..playerName = textInput
+                               ..playerColorValue = _currentColor.toARGB32()
                               ..scores = [];
                             playersList.add(newPlayerSession);
                           }
@@ -840,7 +856,11 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                 // Show a mini tally of how many point entries they have logged total
                 final totalRounds = playerSession.scores.length;
 
+                final inheritedColor = playerSession.playerColorValue ?? _game?.colorValue;
+                final Color highlightColor = inheritedColor != null ? Color(inheritedColor) : AppTheme.palette.first;
+
                 return StylizedCard(
+                  shadowColor: highlightColor,
                   margin: const EdgeInsets.symmetric(
                     horizontal: 10,
                     vertical: 5,
@@ -881,9 +901,9 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.edit_outlined,
-                                color: AppTheme.primary,
+                                color: highlightColor,
                               ),
                               tooltip: AppLocalizations.of(context)!.editPlayer,
                               onPressed: () {
@@ -893,9 +913,9 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                               },
                             ),
                             IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.history,
-                                color: AppTheme.primary,
+                                color: highlightColor,
                               ),
                               tooltip: AppLocalizations.of(context)!.viewScoreHistory,
                               onPressed: () {
@@ -953,8 +973,8 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                                       children: [
                                         TextSpan(
                                           text: '$totalRounds ',
-                                          style: const TextStyle(
-                                            color: AppTheme.primary,
+                                          style: TextStyle(
+                                            color: highlightColor,
                                             fontWeight: FontWeight.w600, // Pop highlighting matching your other metric chips
                                           ),
                                         ),

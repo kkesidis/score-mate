@@ -252,4 +252,7 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get couldNotFindGame => 'Δεν βρέθηκε το παιχνίδι';
+
+  @override
+  String get chooseColor => 'Επιλέξτε χρώμα';
 }

@@ -17,23 +17,28 @@ const BoardGameSchema = CollectionSchema(
   name: r'BoardGame',
   id: 7270409142093104192,
   properties: {
-    r'description': PropertySchema(
+    r'colorValue': PropertySchema(
       id: 0,
+      name: r'colorValue',
+      type: IsarType.long,
+    ),
+    r'description': PropertySchema(
+      id: 1,
       name: r'description',
       type: IsarType.string,
     ),
     r'highestScoreWins': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'highestScoreWins',
       type: IsarType.bool,
     ),
     r'name': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'name',
       type: IsarType.string,
     ),
     r'sessions': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'sessions',
       type: IsarType.objectList,
       target: r'MatchSession',
@@ -87,11 +92,12 @@ void _boardGameSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.description);
-  writer.writeBool(offsets[1], object.highestScoreWins);
-  writer.writeString(offsets[2], object.name);
+  writer.writeLong(offsets[0], object.colorValue);
+  writer.writeString(offsets[1], object.description);
+  writer.writeBool(offsets[2], object.highestScoreWins);
+  writer.writeString(offsets[3], object.name);
   writer.writeObjectList<MatchSession>(
-    offsets[3],
+    offsets[4],
     allOffsets,
     MatchSessionSchema.serialize,
     object.sessions,
@@ -105,12 +111,13 @@ BoardGame _boardGameDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = BoardGame();
-  object.description = reader.readStringOrNull(offsets[0]);
-  object.highestScoreWins = reader.readBool(offsets[1]);
+  object.colorValue = reader.readLongOrNull(offsets[0]);
+  object.description = reader.readStringOrNull(offsets[1]);
+  object.highestScoreWins = reader.readBool(offsets[2]);
   object.id = id;
-  object.name = reader.readString(offsets[2]);
+  object.name = reader.readString(offsets[3]);
   object.sessions = reader.readObjectList<MatchSession>(
-        offsets[3],
+        offsets[4],
         MatchSessionSchema.deserialize,
         allOffsets,
         MatchSession(),
@@ -127,12 +134,14 @@ P _boardGameDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 1:
-      return (reader.readBool(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 2:
-      return (reader.readString(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 3:
+      return (reader.readString(offset)) as P;
+    case 4:
       return (reader.readObjectList<MatchSession>(
             offset,
             MatchSessionSchema.deserialize,
@@ -236,6 +245,77 @@ extension BoardGameQueryWhere
 
 extension BoardGameQueryFilter
     on QueryBuilder<BoardGame, BoardGame, QFilterCondition> {
+  QueryBuilder<BoardGame, BoardGame, QAfterFilterCondition> colorValueIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'colorValue',
+      ));
+    });
+  }
+
+  QueryBuilder<BoardGame, BoardGame, QAfterFilterCondition>
+      colorValueIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'colorValue',
+      ));
+    });
+  }
+
+  QueryBuilder<BoardGame, BoardGame, QAfterFilterCondition> colorValueEqualTo(
+      int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'colorValue',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<BoardGame, BoardGame, QAfterFilterCondition>
+      colorValueGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'colorValue',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<BoardGame, BoardGame, QAfterFilterCondition> colorValueLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'colorValue',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<BoardGame, BoardGame, QAfterFilterCondition> colorValueBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'colorValue',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<BoardGame, BoardGame, QAfterFilterCondition>
       descriptionIsNull() {
     return QueryBuilder.apply(this, (query) {
@@ -684,6 +764,18 @@ extension BoardGameQueryLinks
     on QueryBuilder<BoardGame, BoardGame, QFilterCondition> {}
 
 extension BoardGameQuerySortBy on QueryBuilder<BoardGame, BoardGame, QSortBy> {
+  QueryBuilder<BoardGame, BoardGame, QAfterSortBy> sortByColorValue() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'colorValue', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BoardGame, BoardGame, QAfterSortBy> sortByColorValueDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'colorValue', Sort.desc);
+    });
+  }
+
   QueryBuilder<BoardGame, BoardGame, QAfterSortBy> sortByDescription() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'description', Sort.asc);
@@ -724,6 +816,18 @@ extension BoardGameQuerySortBy on QueryBuilder<BoardGame, BoardGame, QSortBy> {
 
 extension BoardGameQuerySortThenBy
     on QueryBuilder<BoardGame, BoardGame, QSortThenBy> {
+  QueryBuilder<BoardGame, BoardGame, QAfterSortBy> thenByColorValue() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'colorValue', Sort.asc);
+    });
+  }
+
+  QueryBuilder<BoardGame, BoardGame, QAfterSortBy> thenByColorValueDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'colorValue', Sort.desc);
+    });
+  }
+
   QueryBuilder<BoardGame, BoardGame, QAfterSortBy> thenByDescription() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'description', Sort.asc);
@@ -776,6 +880,12 @@ extension BoardGameQuerySortThenBy
 
 extension BoardGameQueryWhereDistinct
     on QueryBuilder<BoardGame, BoardGame, QDistinct> {
+  QueryBuilder<BoardGame, BoardGame, QDistinct> distinctByColorValue() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'colorValue');
+    });
+  }
+
   QueryBuilder<BoardGame, BoardGame, QDistinct> distinctByDescription(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -802,6 +912,12 @@ extension BoardGameQueryProperty
   QueryBuilder<BoardGame, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<BoardGame, int?, QQueryOperations> colorValueProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'colorValue');
     });
   }
 
@@ -1282,13 +1398,18 @@ const PlayerSessionSchema = Schema(
   name: r'PlayerSession',
   id: 2443102612106195845,
   properties: {
-    r'playerName': PropertySchema(
+    r'playerColorValue': PropertySchema(
       id: 0,
+      name: r'playerColorValue',
+      type: IsarType.long,
+    ),
+    r'playerName': PropertySchema(
+      id: 1,
       name: r'playerName',
       type: IsarType.string,
     ),
     r'scores': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'scores',
       type: IsarType.objectList,
       target: r'ScoreEntry',
@@ -1329,9 +1450,10 @@ void _playerSessionSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.playerName);
+  writer.writeLong(offsets[0], object.playerColorValue);
+  writer.writeString(offsets[1], object.playerName);
   writer.writeObjectList<ScoreEntry>(
-    offsets[1],
+    offsets[2],
     allOffsets,
     ScoreEntrySchema.serialize,
     object.scores,
@@ -1345,9 +1467,10 @@ PlayerSession _playerSessionDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = PlayerSession();
-  object.playerName = reader.readStringOrNull(offsets[0]);
+  object.playerColorValue = reader.readLongOrNull(offsets[0]);
+  object.playerName = reader.readStringOrNull(offsets[1]);
   object.scores = reader.readObjectList<ScoreEntry>(
-        offsets[1],
+        offsets[2],
         ScoreEntrySchema.deserialize,
         allOffsets,
         ScoreEntry(),
@@ -1364,8 +1487,10 @@ P _playerSessionDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 1:
+      return (reader.readStringOrNull(offset)) as P;
+    case 2:
       return (reader.readObjectList<ScoreEntry>(
             offset,
             ScoreEntrySchema.deserialize,
@@ -1380,6 +1505,80 @@ P _playerSessionDeserializeProp<P>(
 
 extension PlayerSessionQueryFilter
     on QueryBuilder<PlayerSession, PlayerSession, QFilterCondition> {
+  QueryBuilder<PlayerSession, PlayerSession, QAfterFilterCondition>
+      playerColorValueIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'playerColorValue',
+      ));
+    });
+  }
+
+  QueryBuilder<PlayerSession, PlayerSession, QAfterFilterCondition>
+      playerColorValueIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'playerColorValue',
+      ));
+    });
+  }
+
+  QueryBuilder<PlayerSession, PlayerSession, QAfterFilterCondition>
+      playerColorValueEqualTo(int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'playerColorValue',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayerSession, PlayerSession, QAfterFilterCondition>
+      playerColorValueGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'playerColorValue',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayerSession, PlayerSession, QAfterFilterCondition>
+      playerColorValueLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'playerColorValue',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayerSession, PlayerSession, QAfterFilterCondition>
+      playerColorValueBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'playerColorValue',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<PlayerSession, PlayerSession, QAfterFilterCondition>
       playerNameIsNull() {
     return QueryBuilder.apply(this, (query) {

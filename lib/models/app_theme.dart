@@ -50,6 +50,14 @@ class AppTheme {
   static const Color color4 = Color(0xFFC47A5B);
   static const Color color5 = Color(0xFF6AAB7C);
 
+  static const List<Color> palette = [
+    color1,
+    color2,
+    color3,
+    color4,
+    color5,
+  ];
+
   // Sidebar Layout Theme Profile
   static const Color sidebar = Color(0xFF0D1520);
   static const Color sidebarForeground = Color(0xFFDDE8F0);

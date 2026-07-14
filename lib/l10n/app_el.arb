@@ -73,5 +73,6 @@
   "settings": "Ρυθμίσεις",
   "language": "Γλώσσα",
   "notAvailable": "-",
-  "couldNotFindGame": "Δεν βρέθηκε το παιχνίδι"
+  "couldNotFindGame": "Δεν βρέθηκε το παιχνίδι",
+  "chooseColor": "Επιλέξτε χρώμα"
 }

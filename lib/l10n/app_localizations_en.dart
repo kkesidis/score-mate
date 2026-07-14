@@ -249,4 +249,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get couldNotFindGame => '';
+
+  @override
+  String get chooseColor => 'Choose color';
 }
