@@ -238,6 +238,8 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
     // Read the list from our dynamically updated local game variable
     final sessions = _game!.sessions;
 
+    final highlightColor = _game?.colorValue != null ? Color(_game!.colorValue!) : AppTheme.palette.first;
+
     return Scaffold(
       appBar: AppBar(
         title: Column(
@@ -319,6 +321,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                 }
 
                 return StylizedCard(
+                  shadowColor: highlightColor,
                   margin: const EdgeInsets.symmetric(
                     horizontal: 10,
                     vertical: 6,
@@ -339,9 +342,9 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.edit_outlined,
-                                color: AppTheme.primary,
+                                color: highlightColor,
                               ),
                               tooltip: AppLocalizations.of(context)!.renameSession,
                               onPressed: () {

@@ -10,6 +10,9 @@ class BoardGame {
   String? description;
   bool highestScoreWins = true;
 
+  // Store the game's theme color as a number (e.g., 0xFF4CAF50)
+  int? colorValue;
+
   List<MatchSession> sessions = [];
 }
 
@@ -24,6 +27,10 @@ class MatchSession {
 @embedded
 class PlayerSession {
   String? playerName;
+
+  // Store a specific player's color for this session
+  int? playerColorValue;
+
   List<ScoreEntry> scores = [];
 }
 

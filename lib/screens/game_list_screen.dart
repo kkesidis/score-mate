@@ -7,6 +7,7 @@ import '../components/stylized_card.dart';
 import '../helpers/custom_fab_location.dart';
 import 'package:go_router/go_router.dart';
 import '../l10n/app_localizations.dart';
+import '../components/color_picker_field.dart';
 
 
 class GameListScreen extends StatefulWidget {
@@ -85,6 +86,7 @@ class _GameListScreenState extends State<GameListScreen> {
     final nameController = TextEditingController();
     final descController = TextEditingController();
     bool highestWins = true;
+    Color _currentColor = AppTheme.palette.first;
 
     // If we are editing, pre-fill the form fields with the current values
     final isEditing = existingGame != null;
@@ -92,6 +94,7 @@ class _GameListScreenState extends State<GameListScreen> {
       nameController.text = existingGame.name;
       descController.text = existingGame.description ?? '';
       highestWins = existingGame.highestScoreWins;
+      _currentColor = existingGame.colorValue != null ? Color(existingGame.colorValue!) : _currentColor;
     }
 
     showModalBottomSheet(
@@ -135,6 +138,15 @@ class _GameListScreenState extends State<GameListScreen> {
                       labelText: AppLocalizations.of(context)!.gameNameLabel,
                       hintText: AppLocalizations.of(context)!.gameNameHint,
                     ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  ColorPickerField(
+                    initialColor: _currentColor,
+                    onColorSelected: (newColor) {
+                      _currentColor = newColor; 
+                    },
                   ),
 
                   const SizedBox(height: 10),
@@ -281,6 +293,7 @@ class _GameListScreenState extends State<GameListScreen> {
                               ? null
                               : descController.text.trim();
                           gameToSave.highestScoreWins = highestWins;
+                          gameToSave.colorValue = _currentColor.toARGB32();
 
                           await isar.writeTxn(() async {
                             await isar.boardGames.put(gameToSave);
@@ -333,9 +346,11 @@ class _GameListScreenState extends State<GameListScreen> {
           : ListView.builder(
               itemCount: sortedGames.length,
               itemBuilder: (context, index) {
-                final game = sortedGames[index];
+                final BoardGame game = sortedGames[index];
+                final Color highlightColor = game.colorValue != null ? Color(game.colorValue!) : AppTheme.palette.first;
 
                 return StylizedCard(
+                  shadowColor: highlightColor,
                   margin: const EdgeInsets.symmetric(
                     horizontal: 10,
                     vertical: 6,
@@ -356,9 +371,9 @@ class _GameListScreenState extends State<GameListScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.edit_outlined,
-                                color: AppTheme.primary,
+                                color: highlightColor,
                               ),
                               tooltip: AppLocalizations.of(context)!.editGame,
                               onPressed: () {
@@ -403,8 +418,8 @@ class _GameListScreenState extends State<GameListScreen> {
                                   children: [
                                     TextSpan(
                                       text: '${game.sessions.length} ',
-                                      style: const TextStyle(
-                                        color: AppTheme.primary,
+                                      style: TextStyle(
+                                        color: highlightColor,
                                         fontWeight: FontWeight.w600, // Slightly bolder for visibility
                                       ),
                                     ),
