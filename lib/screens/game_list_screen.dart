@@ -4,7 +4,10 @@ import '../main.dart';
 import '../models/board_game.dart';
 import '../models/app_theme.dart';
 import '../components/stylized_card.dart';
-import 'match_sessions_screen.dart';
+import '../helpers/custom_fab_location.dart';
+import 'package:go_router/go_router.dart';
+import '../l10n/app_localizations.dart';
+
 
 class GameListScreen extends StatefulWidget {
   const GameListScreen({super.key});
@@ -41,15 +44,13 @@ class _GameListScreenState extends State<GameListScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Delete Board Game'),
-          content: Text(
-            'Are you sure you want to delete "${game.name}"? This will permanently remove all associated match sessions.',
-          ),
+          title: Text(AppLocalizations.of(context)!.deleteBoardGameTitle),
+          content: Text(AppLocalizations.of(context)!.deleteBoardGameDescription(game.name)),
           actions: [
             TextButton(
               onPressed: () =>
                   Navigator.pop(context), // Close the dialog, do nothing
-              child: const Text('Cancel'),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -60,7 +61,7 @@ class _GameListScreenState extends State<GameListScreen> {
                 _deleteGame(game.id); // Run the actual Isar delete code
                 Navigator.pop(context); // Close the dialog
               },
-              child: const Text('Delete'),
+              child: Text(AppLocalizations.of(context)!.delete),
             ),
           ],
         );
@@ -75,7 +76,7 @@ class _GameListScreenState extends State<GameListScreen> {
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Game deleted successfully')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.gameDeleted)),
       );
     }
   }
@@ -95,8 +96,8 @@ class _GameListScreenState extends State<GameListScreen> {
 
     showModalBottomSheet(
       context: context,
-      isScrollControlled:
-          true, // Allows the sheet to resize when keyboards push up
+      isScrollControlled: true, // Allows the sheet to resize when keyboards push up
+      useRootNavigator: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -117,7 +118,7 @@ class _GameListScreenState extends State<GameListScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isEditing ? 'Edit Game' : 'New Game',
+                    isEditing ? AppLocalizations.of(context)!.editGame : AppLocalizations.of(context)!.newGame,
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -130,9 +131,9 @@ class _GameListScreenState extends State<GameListScreen> {
                     autofocus: true,
                     controller: nameController,
                     textCapitalization: TextCapitalization.sentences,
-                    decoration: const InputDecoration(
-                      labelText: 'Game Name *',
-                      hintText: 'e.g. Wingspan',
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.gameNameLabel,
+                      hintText: AppLocalizations.of(context)!.gameNameHint,
                     ),
                   ),
 
@@ -141,9 +142,9 @@ class _GameListScreenState extends State<GameListScreen> {
                   TextField(
                     controller: descController,
                     textCapitalization: TextCapitalization.sentences,
-                    decoration: const InputDecoration(
-                      labelText: 'Description',
-                      hintText: 'Short description of the game..',
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context)!.gameDescriptionLabel,
+                      hintText: AppLocalizations.of(context)!.gameDescriptionHint,
                     ),
                   ),
 
@@ -182,7 +183,7 @@ class _GameListScreenState extends State<GameListScreen> {
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  'Highest Wins',
+                                  AppLocalizations.of(context)!.highestWins,
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
@@ -230,7 +231,7 @@ class _GameListScreenState extends State<GameListScreen> {
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  'Lowest Wins',
+                                  AppLocalizations.of(context)!.lowestWins,
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
@@ -258,7 +259,7 @@ class _GameListScreenState extends State<GameListScreen> {
                     children: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
+                        child: Text(AppLocalizations.of(context)!.cancel),
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton(
@@ -287,7 +288,7 @@ class _GameListScreenState extends State<GameListScreen> {
 
                           if (context.mounted) Navigator.pop(context);
                         },
-                        child: Text(isEditing ? 'Save' : 'Add'),
+                        child: Text(isEditing ? AppLocalizations.of(context)!.save : AppLocalizations.of(context)!.add),
                       ),
                     ],
                   ),
@@ -315,7 +316,7 @@ class _GameListScreenState extends State<GameListScreen> {
             const Text('ScoreDen'),
             const SizedBox(height: 2), // Tiny spacer between lines
             Text(
-              '${_games.length} games tracked',
+              AppLocalizations.of(context)!.gamesTracked(_games.length),
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
@@ -328,7 +329,7 @@ class _GameListScreenState extends State<GameListScreen> {
         ),
       ),
       body: sortedGames.isEmpty
-          ? const Center(child: Text('No games added yet. Tap + to begin!'))
+          ? Center(child: Text(AppLocalizations.of(context)!.noGamesYet))
           : ListView.builder(
               itemCount: sortedGames.length,
               itemBuilder: (context, index) {
@@ -348,7 +349,7 @@ class _GameListScreenState extends State<GameListScreen> {
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: Text(
-                          game.description ?? '-',
+                          game.description ?? AppLocalizations.of(context)!.notAvailable,
                           style: const TextStyle(color: AppTheme.mutedForeground),
                         ),
                         trailing: Row(
@@ -359,7 +360,7 @@ class _GameListScreenState extends State<GameListScreen> {
                                 Icons.edit_outlined,
                                 color: AppTheme.primary,
                               ),
-                              tooltip: 'Edit Game',
+                              tooltip: AppLocalizations.of(context)!.editGame,
                               onPressed: () {
                                 _showGameDialog(existingGame: game);
                               },
@@ -369,7 +370,7 @@ class _GameListScreenState extends State<GameListScreen> {
                                 Icons.delete_outline,
                                 color: AppTheme.destructive,
                               ),
-                              tooltip: 'Delete Game',
+                              tooltip: AppLocalizations.of(context)!.deleteGame,
                               onPressed: () {
                                 _showDeleteConfirmationDialog(game);
                               },
@@ -377,13 +378,7 @@ class _GameListScreenState extends State<GameListScreen> {
                           ],
                         ),
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  MatchSessionsScreen(game: game),
-                            ),
-                          );
+                          context.go('/home/${game.id}/sessions');
                         },
                       ),
 
@@ -414,7 +409,7 @@ class _GameListScreenState extends State<GameListScreen> {
                                       ),
                                     ),
                                     TextSpan(
-                                      text: 'matches',
+                                      text: AppLocalizations.of(context)!.sessions,
                                       style: TextStyle(
                                         color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                         fontWeight: FontWeight.w500,
@@ -454,7 +449,7 @@ class _GameListScreenState extends State<GameListScreen> {
                                   ),
                                   const SizedBox(width: 6), // Crisp spacing between icon and labels
                                   Text(
-                                    game.highestScoreWins ? 'Highest score wins' : 'Lowest score wins',
+                                    game.highestScoreWins ? AppLocalizations.of(context)!.highestScoretWins : AppLocalizations.of(context)!.lowestScoretWins,
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
@@ -474,6 +469,10 @@ class _GameListScreenState extends State<GameListScreen> {
                 );
               },
             ),
+      floatingActionButtonLocation: const CustomFabLocation(
+        offsetY: 80.0, 
+        offsetX: 6.0,
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () =>
             _showGameDialog(), // Calls dialog without arguments (Defaults to Add Mode)

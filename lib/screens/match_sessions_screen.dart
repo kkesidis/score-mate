@@ -3,38 +3,56 @@ import '../main.dart'; // Imports our global 'isar' instance
 import '../models/board_game.dart';
 import '../models/app_theme.dart';
 import '../components/stylized_card.dart';
-import 'player_scores_screen.dart';
+import 'dart:async';
+import '../helpers/custom_fab_location.dart';
+import 'package:go_router/go_router.dart';
+import '../l10n/app_localizations.dart';
 
 class MatchSessionsScreen extends StatefulWidget {
-  final BoardGame game;
+  final int gameId;
 
-  const MatchSessionsScreen({super.key, required this.game});
+  const MatchSessionsScreen({super.key, required this.gameId});
 
   @override
   State<MatchSessionsScreen> createState() => _MatchSessionsScreenState();
 }
 
 class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
-  // We keep a local reference to the game object so we can refresh its data
-  late BoardGame _currentGame;
+  BoardGame? _game;
+  StreamSubscription? _dbSubscription;
 
   @override
   void initState() {
     super.initState();
-    _currentGame = widget.game;
+    _loadGameData();
     _listenToDatabaseChanges();
+  }
+
+  void _loadGameData() async {
+    final game = await isar.boardGames.get(widget.gameId);
+    if (mounted) {
+      setState(() {
+        _game = game;
+      });
+    }
   }
 
   // Set up a listener so if the parent game updates, this screen reflects it instantly
   void _listenToDatabaseChanges() {
-    isar.boardGames.watchObjectLazy(_currentGame.id).listen((_) async {
-      final updatedGame = await isar.boardGames.get(_currentGame.id);
+    _dbSubscription = isar.boardGames.watchObjectLazy(widget.gameId).listen((_) async {
+      final updatedGame = await isar.boardGames.get(widget.gameId);
       if (updatedGame != null && mounted) {
         setState(() {
-          _currentGame = updatedGame;
+          _game = updatedGame;
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _dbSubscription?.cancel(); // <-- Stop listening when screen is destroyed
+    super.dispose();
   }
 
   void _showSessionDialog({int? actualIndex}) {
@@ -42,14 +60,14 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
     final isEditing = actualIndex != null;
 
     if (isEditing) {
-      final existingSession = _currentGame.sessions[actualIndex];
+      final existingSession = _game!.sessions[actualIndex];
       nameController.text = existingSession.name ?? '';
     }
 
     showModalBottomSheet(
       context: context,
-      isScrollControlled:
-          true, // Allows the sheet to resize when keyboards push up
+      isScrollControlled: true, // Allows the sheet to resize when keyboards push up
+      useRootNavigator: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -70,7 +88,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isEditing ? 'Rename Match Session' : 'New Match Session',
+                    isEditing ? AppLocalizations.of(context)!.renameSession : AppLocalizations.of(context)!.newSession,
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -85,12 +103,10 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                     controller: nameController,
                     textCapitalization: TextCapitalization.sentences,
                     decoration: InputDecoration(
-                      labelText: isEditing
-                          ? 'Session Name'
-                          : 'Session Name (Optional)',
+                      labelText: AppLocalizations.of(context)!.sessionNameLabel,
                       hintText: isEditing
                           ? null
-                          : 'Defaults to "Match #${_currentGame.sessions.length + 1}"',
+                          : AppLocalizations.of(context)!.sessionNameHint(_game!.sessions.length + 1),
                     ),
                   ),
 
@@ -105,7 +121,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                     children: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
+                        child: Text(AppLocalizations.of(context)!.cancel),
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton(
@@ -119,7 +135,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                           // Edit guard: don't let them clear out an existing name to empty string
                           if (isEditing && textInput.isEmpty) return;
 
-                          final updatedSessions = _currentGame.sessions
+                          final updatedSessions = _game!.sessions
                               .toList();
 
                           if (isEditing) {
@@ -128,9 +144,9 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                           } else {
                             // 2B. EXECUTE TRANSACTION CREATE INSERTION ROUTINE
                             final nextMatchNumber =
-                                _currentGame.sessions.length + 1;
+                                _game!.sessions.length + 1;
                             final sessionName = textInput.isEmpty
-                                ? 'Match #$nextMatchNumber'
+                                ? AppLocalizations.of(context)!.indexedSession(nextMatchNumber)
                                 : textInput;
 
                             final newSession = MatchSession()
@@ -141,14 +157,14 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                           }
 
                           // 3. PERSIST THE SESSION LIST ARRAY STATE CHUNK
-                          _currentGame.sessions = updatedSessions;
+                          _game!.sessions = updatedSessions;
                           await isar.writeTxn(() async {
-                            await isar.boardGames.put(_currentGame);
+                            await isar.boardGames.put(_game!);
                           });
 
                           if (context.mounted) Navigator.pop(context);
                         },
-                        child: Text(isEditing ? 'Save' : 'Add'),
+                        child: Text(isEditing ? AppLocalizations.of(context)!.save : AppLocalizations.of(context)!.add),
                       ),
                     ],
                   ),
@@ -166,14 +182,14 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Delete Match Session'),
+          title: Text(AppLocalizations.of(context)!.deleteSessionTitle),
           content: Text(
-            'Are you sure you want to delete "$sessionName"? This will erase all player scores for this match.',
+            AppLocalizations.of(context)!.deleteSessionDescription(sessionName),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -184,7 +200,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                 _deleteSession(actualIndex);
                 Navigator.pop(context);
               },
-              child: const Text('Delete'),
+              child: Text(AppLocalizations.of(context)!.delete),
             ),
           ],
         );
@@ -194,25 +210,33 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
 
   // 3. ACTUAL ISAR DELETE TRANSACTION
   void _deleteSession(int actualIndex) async {
-    final updatedSessions = _currentGame.sessions.toList();
+    final updatedSessions = _game!.sessions.toList();
     updatedSessions.removeAt(actualIndex); // Pull it out of the array slot
-    _currentGame.sessions = updatedSessions;
+    _game!.sessions = updatedSessions;
 
     await isar.writeTxn(() async {
-      await isar.boardGames.put(_currentGame);
+      await isar.boardGames.put(_game!);
     });
 
     if (mounted) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Match session removed')));
+      ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.sessionRemoved)));
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_game == null) {
+      return Scaffold(
+        body: Center(
+          child: Text(AppLocalizations.of(context)!.couldNotFindGame),
+        ),
+      );
+    }
+
     // Read the list from our dynamically updated local game variable
-    final sessions = _currentGame.sessions;
+    final sessions = _game!.sessions;
 
     return Scaffold(
       appBar: AppBar(
@@ -220,10 +244,10 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Matches'),
+            Text(AppLocalizations.of(context)!.sessionsTitle),
             const SizedBox(height: 2), // Tiny spacer between lines
             Text(
-              _currentGame.name,
+              _game!.name,
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w400,
@@ -236,7 +260,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
         ),
       ),
       body: sessions.isEmpty
-          ? const Center(child: Text('No matches recorded for this game yet.'))
+          ? Center(child: Text(AppLocalizations.of(context)!.noSessionsYet))
           : ListView.builder(
               itemCount: sessions.length,
               itemBuilder: (context, index) {
@@ -248,17 +272,17 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
 
                 // Use the true list placement index for the default naming fallback
                 final sessionName =
-                    session.name ?? 'Match #${reversedIndex + 1}';
+                    session.name ?? AppLocalizations.of(context)!.indexedSession(reversedIndex + 1);
 
                 final sessionDate = session.dateTime != null
                     ? '${session.dateTime!.day}/${session.dateTime!.month}/${session.dateTime!.year}'
-                    : 'Unknown Date';
+                    : AppLocalizations.of(context)!.notAvailable;
 
                 final sessionPlayers = session.players ?? [];
 
-                String winnerText = 'No winner yet';
+                String winnerText = AppLocalizations.of(context)!.noWinnerYet;
                 if (sessionPlayers.isNotEmpty) {
-                  final highestScoreWins = _currentGame.highestScoreWins;
+                  final highestScoreWins = _game!.highestScoreWins;
 
                   // Create a map matching each player to their calculated total score
                   final playerScores = <PlayerSession, int>{};
@@ -283,14 +307,14 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                   // Collect all players who hit that exact winning score target
                   final winners = playerScores.entries
                       .where((entry) => entry.value == winningScore)
-                      .map((entry) => entry.key.playerName ?? 'Unknown')
+                      .map((entry) => entry.key.playerName ?? AppLocalizations.of(context)!.notAvailable)
                       .toList();
 
                   // Format the output string depending on if it's a solo victory or a tie!
                   if (winners.length > 1) {
-                    winnerText = 'Tie: ${winners.join(', ')} ($winningScore)';
+                    winnerText = '${AppLocalizations.of(context)!.tie}: ${winners.join(', ')} ($winningScore)';
                   } else {
-                    winnerText = 'Winner: ${winners.first} ($winningScore)';
+                    winnerText = '${AppLocalizations.of(context)!.winner}: ${winners.first} ($winningScore)';
                   }
                 }
 
@@ -319,7 +343,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                                 Icons.edit_outlined,
                                 color: AppTheme.primary,
                               ),
-                              tooltip: 'Rename Session',
+                              tooltip: AppLocalizations.of(context)!.renameSession,
                               onPressed: () {
                                 _showSessionDialog(actualIndex: reversedIndex);
                               },
@@ -329,7 +353,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                                 Icons.delete_outline,
                                 color: AppTheme.destructive,
                               ),
-                              tooltip: 'Delete Session',
+                              tooltip: AppLocalizations.of(context)!.deleteSession,
                               onPressed: () {
                                 _showDeleteConfirmationDialog(
                                   reversedIndex,
@@ -340,15 +364,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                           ],
                         ),
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => PlayerScoresScreen(
-                                gameId: _currentGame.id,
-                                sessionIndex: reversedIndex,
-                              ),
-                            ),
-                          );
+                          context.go('/home/${_game!.id}/sessions/$reversedIndex');
                         },
                       ),
 
@@ -417,8 +433,8 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                                             fontWeight: FontWeight.w600, // Highlights the count number matching your first chip design
                                           ),
                                         ),
-                                        const TextSpan(
-                                          text: 'players',
+                                        TextSpan(
+                                          text: AppLocalizations.of(context)!.players,
                                         ),
                                       ],
                                       style: TextStyle(
@@ -439,6 +455,10 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                 );
               },
             ),
+      floatingActionButtonLocation: const CustomFabLocation(
+        offsetY: 80.0, 
+        offsetX: 6.0,
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showSessionDialog,
         child: const Icon(Icons.add),
