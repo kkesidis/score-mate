@@ -859,26 +859,6 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     ListTile(
-                      leading: Container(
-                        width: 90,
-                        height: 60,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: highlightColor, // Replace with your desired border color
-                            width: 1.5,                           // Border thickness
-                          ),
-                        ),
-                        child: Text(
-                          '${playerSession.totalScore}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: highlightColor,
-                            fontSize: 20,
-                          ),
-                        ),
-                      ),
                       title: Row(
                         spacing: 8.0,
                         children: [
@@ -942,12 +922,6 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                           ],
                         )
                       ),
-                      onTap: () {
-                        _showScoreEntryFormBottomSheet(
-                          playerSession,
-                          trueIndexInDatabase,
-                        );
-                      },
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -992,6 +966,40 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                         ],
                       ),
                     ),
+                    ListTile(
+                      title: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0,
+                          vertical: 4.0,
+                        ),
+                        child: Container(
+                          width: double.infinity,
+                          height: 50,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: highlightColor, // Replace with your desired border color
+                              width: 1.5,                           // Border thickness
+                            ),
+                          ),
+                          child: Text(
+                            '${playerSession.totalScore}',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: highlightColor,
+                              fontSize: 20,
+                            ),
+                          ),
+                        ),
+                      ),
+                      onTap: () {
+                        _showScoreEntryFormBottomSheet(
+                          playerSession,
+                          trueIndexInDatabase,
+                        );
+                      },
+                    )
                   ],
                 ),
               );

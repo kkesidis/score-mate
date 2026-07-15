@@ -347,6 +347,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Wrap(
                         spacing: 8.0,
+                        runSpacing: 8.0,
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -396,8 +397,10 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                                   : AppTheme.lowestWins,
                               borderRadius: BorderRadius.circular(16),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min, // Prevents chip from stretching full-width
+                            child: Wrap(
+                              direction: Axis.horizontal,
+                              spacing: 6.0,
+                              runSpacing: 6.0,
                               children: [
                                 Icon(
                                   _game!.highestScoreWins 
@@ -408,7 +411,6 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                                       ? AppTheme.highestWinsForeground
                                       : AppTheme.lowestWinsForeground,
                                 ),
-                                const SizedBox(width: 6), // Crisp spacing between icon and labels
                                 Text(
                                   winnerText,
                                   style: TextStyle(
