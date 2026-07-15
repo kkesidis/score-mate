@@ -200,9 +200,6 @@ class AppLocalizationsEl extends AppLocalizations {
       'Δεν έχουν προστεθεί παίκτες ακόμα. Πατήστε το + για να προσθέσετε συμμετέχοντες!';
 
   @override
-  String get score => 'Σκορ';
-
-  @override
   String get editPlayer => 'Επεξεργασία παίκτη';
 
   @override

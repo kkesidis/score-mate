@@ -434,12 +434,6 @@ abstract class AppLocalizations {
   /// **'No players added yet. Tap + to add participants!'**
   String get noPlayersAddedYet;
 
-  /// No description provided for @score.
-  ///
-  /// In en, this message translates to:
-  /// **'Score'**
-  String get score;
-
   /// No description provided for @editPlayer.
   ///
   /// In en, this message translates to:

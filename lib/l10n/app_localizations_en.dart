@@ -197,9 +197,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'No players added yet. Tap + to add participants!';
 
   @override
-  String get score => 'Score';
-
-  @override
   String get editPlayer => 'Edit Player';
 
   @override

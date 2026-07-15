@@ -47,11 +47,6 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
     });
   }
 
-  // Combines all historical values inside the scores array
-  int _calculateTotalScore(PlayerSession playerSession) {
-    return playerSession.scores.fold(0, (sum, item) => sum + (item.value ?? 0));
-  }
-
   void _showPlayerFormBottomSheet({int? playerIndexInDatabase}) {
     final nameController = TextEditingController();
     final bool isEditing = playerIndexInDatabase != null;
@@ -791,22 +786,20 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
     final currentMatchSession = _game!.sessions[widget.sessionIndex];
     final basePlayers = currentMatchSession.players ?? <PlayerSession>[];
+    int? topPlayerIndex;
 
     final List<MapEntry<int, PlayerSession>> indexedPlayers = basePlayers
         .asMap()
         .entries
         .toList();
 
-    // Sort leaderboard by accumulated score total totals
-    indexedPlayers.sort((a, b) {
-      final totalA = _calculateTotalScore(a.value);
-      final totalB = _calculateTotalScore(b.value);
-      if (_game!.highestScoreWins) {
-        return totalB.compareTo(totalA);
-      } else {
-        return totalA.compareTo(totalB);
-      }
-    });
+    if (indexedPlayers.isNotEmpty) {
+      final MapEntry<int, PlayerSession> topPlayerEntry = indexedPlayers.reduce((currentMax, next) {
+        return next.value.totalScore > currentMax.value.totalScore ? next : currentMax;
+      });
+
+      topPlayerIndex = topPlayerEntry.key;
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -864,15 +857,14 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                     final playerSession = entry.value;
 
                     final playerName = playerSession.playerName ?? AppLocalizations.of(context)!.genericPlayerName;
-                    final totalScore = _calculateTotalScore(playerSession);
-                    final rank = index + 1;
+                    final isWinner = topPlayerIndex == index;
 
                     // Show a mini tally of how many point entries they have logged total
                     final totalRounds = playerSession.scores.length;
 
                     final inheritedColor = playerSession.playerColorValue ?? _game?.colorValue;
                     final Color highlightColor = inheritedColor != null ? Color(inheritedColor) : AppTheme.palette.first;
-
+                    
                     return StylizedCard(
                       shadowColor: highlightColor,
                       margin: const EdgeInsets.symmetric(
@@ -883,27 +875,88 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: rank == 1
-                                  ? AppTheme.highestWins
-                                  : AppTheme.lowestWins,
+                            leading: Container(
+                              width: 90,
+                              height: 60,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: highlightColor, // Replace with your desired border color
+                                  width: 1.5,                           // Border thickness
+                                ),
+                              ),
                               child: Text(
-                                '#$rank',
+                                '${playerSession.totalScore}',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: rank == 1
-                                      ? AppTheme.highestWinsForeground
-                                      : AppTheme.lowestWinsForeground,
+                                  color: highlightColor,
+                                  fontSize: 20,
                                 ),
                               ),
                             ),
-                            title: Text(
-                              playerName,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            title: Row(
+                              spacing: 8.0,
+                              children: [
+                                Text(
+                                  playerName,
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                
+                                if (isWinner)
+                                  const Icon(
+                                    Icons.star,
+                                    color: Colors.amber,
+                                    size: 18,
+                                  ),
+                              ],
                             ),
-                            subtitle: Text(
-                              '${AppLocalizations.of(context)!.score}: $totalScore',
-                              style: const TextStyle(color: AppTheme.mutedForeground),
+                            subtitle: Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      // Standard translucent chip background: rgba(255, 255, 255, 0.07)
+                                      color: const Color(0x12FFFFFF), 
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min, // Wraps container tightly around content
+                                      children: [
+                                        Icon(
+                                          Icons.layers_outlined,
+                                          size: 13,
+                                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text.rich(
+                                          TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: '$totalRounds ',
+                                                style: TextStyle(
+                                                  color: highlightColor,
+                                                  fontWeight: FontWeight.w600, // Pop highlighting matching your other metric chips
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: AppLocalizations.of(context)!.rounds, // Simplified text to fit standard metadata patterns
+                                              ),
+                                            ],
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              )
                             ),
                             onTap: () {
                               _showScoreEntryFormBottomSheet(
@@ -952,60 +1005,6 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                                     );
                                   },
                                 ),
-                              ],
-                            ),
-                          ),
-                          
-                          const SizedBox(height: 4),
-
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16.0,
-                              vertical: 10.0,
-                            ),
-                            child: Row(
-                              children: [
-                                // FIX: Swapped calendar icon for a round/layers icon to match the text context
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    // Standard translucent chip background: rgba(255, 255, 255, 0.07)
-                                    color: const Color(0x12FFFFFF), 
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min, // Wraps container tightly around content
-                                    children: [
-                                      Icon(
-                                        Icons.layers_outlined,
-                                        size: 13,
-                                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text.rich(
-                                        TextSpan(
-                                          children: [
-                                            TextSpan(
-                                              text: '$totalRounds ',
-                                              style: TextStyle(
-                                                color: highlightColor,
-                                                fontWeight: FontWeight.w600, // Pop highlighting matching your other metric chips
-                                              ),
-                                            ),
-                                            TextSpan(
-                                              text: AppLocalizations.of(context)!.rounds, // Simplified text to fit standard metadata patterns
-                                            ),
-                                          ],
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
                               ],
                             ),
                           ),
