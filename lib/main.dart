@@ -156,19 +156,6 @@ class ScoreDenApp extends StatelessWidget {
               thickness: 1.0,
               space: 1.0,
             ),
-            elevatedButtonTheme: ElevatedButtonThemeData(
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(AppTheme.primary),
-                foregroundColor: WidgetStateProperty.all(AppTheme.primaryForeground),
-                elevation: WidgetStateProperty.all(2),
-                shape: WidgetStateProperty.all(
-                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                textStyle: WidgetStateProperty.all(
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              )
-            ),
             tooltipTheme: TooltipThemeData(
               preferBelow: false, // Prevents finger/thumb from blocking the popup
               triggerMode: TooltipTriggerMode.tap, // Instant tap response on mobile

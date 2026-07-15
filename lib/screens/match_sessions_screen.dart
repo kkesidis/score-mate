@@ -261,226 +261,210 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
           ],
         ),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(6.0),
-            child: SizedBox(
-              width: double.infinity,
-              height: 50.0,
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.add),
-                label: Text(AppLocalizations.of(context)!.newSession),
-                onPressed: () {
-                  _showSessionDialog();
-                },
+      body: sessions.isEmpty
+        ? Center(child: Text(AppLocalizations.of(context)!.noSessionsYet))
+        : ListView.builder(
+          itemCount: sessions.length,
+          itemBuilder: (context, index) {
+            // REVERSE ORDER LOGIC:
+            // Instead of counting 0, 1, 2... from the front,
+            // we count backwards from the last item in the list.
+            final reversedIndex = sessions.length - 1 - index;
+            final session = sessions[reversedIndex];
+
+            // Use the true list placement index for the default naming fallback
+            final sessionName =
+                session.name ?? AppLocalizations.of(context)!.indexedSession(reversedIndex + 1);
+
+            final sessionDate = session.dateTime != null
+                ? '${session.dateTime!.day}/${session.dateTime!.month}/${session.dateTime!.year}'
+                : AppLocalizations.of(context)!.notAvailable;
+
+            final sessionPlayers = session.players ?? [];
+
+            String winnerText = AppLocalizations.of(context)!.noWinnerYet;
+            if (sessionPlayers.isNotEmpty) {
+              final highestScoreWins = _game!.highestScoreWins;
+
+              // Create a map matching each player to their calculated total score
+              final playerScores = <PlayerSession, int>{};
+              for (var player in sessionPlayers) {
+                final total = player.scores.fold(
+                  0,
+                  (sum, item) => sum + (item.value ?? 0),
+                );
+                playerScores[player] = total;
+              }
+
+              // Find the winning score value based on game settings
+              int winningScore = playerScores.values.first;
+              for (var score in playerScores.values) {
+                if (highestScoreWins) {
+                  if (score > winningScore) winningScore = score;
+                } else {
+                  if (score < winningScore) winningScore = score;
+                }
+              }
+
+              // Collect all players who hit that exact winning score target
+              final winners = playerScores.entries
+                  .where((entry) => entry.value == winningScore)
+                  .map((entry) => entry.key.playerName ?? AppLocalizations.of(context)!.notAvailable)
+                  .toList();
+
+              // Format the output string depending on if it's a solo victory or a tie!
+              if (winners.length > 1) {
+                winnerText = '${winners.join(', ')} ($winningScore)';
+              } else {
+                winnerText = '${winners.first} ($winningScore)';
+              }
+            }
+
+            return StylizedCard(
+              shadowColor: highlightColor,
+              margin: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 6,
               ),
-            ),
-          ),
-          Expanded(
-            child: sessions.isEmpty
-              ? Center(child: Text(AppLocalizations.of(context)!.noSessionsYet))
-              : ListView.builder(
-                  itemCount: sessions.length,
-                  itemBuilder: (context, index) {
-                    // REVERSE ORDER LOGIC:
-                    // Instead of counting 0, 1, 2... from the front,
-                    // we count backwards from the last item in the list.
-                    final reversedIndex = sessions.length - 1 - index;
-                    final session = sessions[reversedIndex];
-
-                    // Use the true list placement index for the default naming fallback
-                    final sessionName =
-                        session.name ?? AppLocalizations.of(context)!.indexedSession(reversedIndex + 1);
-
-                    final sessionDate = session.dateTime != null
-                        ? '${session.dateTime!.day}/${session.dateTime!.month}/${session.dateTime!.year}'
-                        : AppLocalizations.of(context)!.notAvailable;
-
-                    final sessionPlayers = session.players ?? [];
-
-                    String winnerText = AppLocalizations.of(context)!.noWinnerYet;
-                    if (sessionPlayers.isNotEmpty) {
-                      final highestScoreWins = _game!.highestScoreWins;
-
-                      // Create a map matching each player to their calculated total score
-                      final playerScores = <PlayerSession, int>{};
-                      for (var player in sessionPlayers) {
-                        final total = player.scores.fold(
-                          0,
-                          (sum, item) => sum + (item.value ?? 0),
-                        );
-                        playerScores[player] = total;
-                      }
-
-                      // Find the winning score value based on game settings
-                      int winningScore = playerScores.values.first;
-                      for (var score in playerScores.values) {
-                        if (highestScoreWins) {
-                          if (score > winningScore) winningScore = score;
-                        } else {
-                          if (score < winningScore) winningScore = score;
-                        }
-                      }
-
-                      // Collect all players who hit that exact winning score target
-                      final winners = playerScores.entries
-                          .where((entry) => entry.value == winningScore)
-                          .map((entry) => entry.key.playerName ?? AppLocalizations.of(context)!.notAvailable)
-                          .toList();
-
-                      // Format the output string depending on if it's a solo victory or a tie!
-                      if (winners.length > 1) {
-                        winnerText = '${winners.join(', ')} ($winningScore)';
-                      } else {
-                        winnerText = '${winners.first} ($winningScore)';
-                      }
-                    }
-
-                    return StylizedCard(
-                      shadowColor: highlightColor,
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    title: Wrap(
+                      spacing: 8.0,
+                      children: [
+                        Text(
+                          sessionName,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          sessionDate,
+                          style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 14),
+                        )
+                      ],
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Wrap(
+                        spacing: 8.0,
                         children: [
-                          ListTile(
-                            title: Wrap(
-                              spacing: 8.0,
-                              children: [
-                                Text(
-                                  sessionName,
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(
-                                  sessionDate,
-                                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 14),
-                                )
-                              ],
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              // Match your standard chip background filter: rgba(255, 255, 255, 0.07)
+                              color: const Color(0x12FFFFFF), 
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                            subtitle: Padding(
-                              padding: const EdgeInsets.only(top: 8.0),
-                              child: Wrap(
-                                spacing: 8.0,
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      // Match your standard chip background filter: rgba(255, 255, 255, 0.07)
-                                      color: const Color(0x12FFFFFF), 
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min, // Wraps container tightly around the content
-                                      children: [
-                                        Icon(
-                                          Icons.people_outline,
-                                          size: 13, // Balanced layout scale matching the date chip
-                                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Text.rich(
-                                          TextSpan(
-                                            children: [
-                                              TextSpan(
-                                                text: '${sessionPlayers.length} ',
-                                                style: const TextStyle(
-                                                  color: AppTheme.primary,
-                                                  fontWeight: FontWeight.w600, // Highlights the count number matching your first chip design
-                                                ),
-                                              ),
-                                              TextSpan(
-                                                text: AppLocalizations.of(context)!.players,
-                                              ),
-                                            ],
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w500,
-                                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      color: _game!.highestScoreWins
-                                          ? AppTheme.highestWins
-                                          : AppTheme.lowestWins,
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min, // Prevents chip from stretching full-width
-                                      children: [
-                                        Icon(
-                                          _game!.highestScoreWins 
-                                              ? Icons.trending_up_rounded 
-                                              : Icons.trending_down_rounded,
-                                          size: 14,
-                                          color: _game!.highestScoreWins
-                                              ? AppTheme.highestWinsForeground
-                                              : AppTheme.lowestWinsForeground,
-                                        ),
-                                        const SizedBox(width: 6), // Crisp spacing between icon and labels
-                                        Text(
-                                          winnerText,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                            color: _game!.highestScoreWins
-                                                ? AppTheme.highestWinsForeground
-                                                : AppTheme.lowestWinsForeground,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min, // Wraps container tightly around the content
                               children: [
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.edit_outlined,
-                                    color: highlightColor,
-                                  ),
-                                  tooltip: AppLocalizations.of(context)!.renameSession,
-                                  onPressed: () {
-                                    _showSessionDialog(actualIndex: reversedIndex);
-                                  },
+                                Icon(
+                                  Icons.people_outline,
+                                  size: 13, // Balanced layout scale matching the date chip
+                                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                                 ),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.delete_outline,
-                                    color: AppTheme.destructive,
+                                const SizedBox(width: 6),
+                                Text.rich(
+                                  TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: '${sessionPlayers.length} ',
+                                        style: const TextStyle(
+                                          color: AppTheme.primary,
+                                          fontWeight: FontWeight.w600, // Highlights the count number matching your first chip design
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: AppLocalizations.of(context)!.players,
+                                      ),
+                                    ],
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                    ),
                                   ),
-                                  tooltip: AppLocalizations.of(context)!.deleteSession,
-                                  onPressed: () {
-                                    _showDeleteConfirmationDialog(
-                                      reversedIndex,
-                                      sessionName,
-                                    );
-                                  },
                                 ),
                               ],
                             ),
-                            onTap: () {
-                              context.go('/home/${_game!.id}/sessions/$reversedIndex');
-                            },
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: _game!.highestScoreWins
+                                  ? AppTheme.highestWins
+                                  : AppTheme.lowestWins,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min, // Prevents chip from stretching full-width
+                              children: [
+                                Icon(
+                                  _game!.highestScoreWins 
+                                      ? Icons.trending_up_rounded 
+                                      : Icons.trending_down_rounded,
+                                  size: 14,
+                                  color: _game!.highestScoreWins
+                                      ? AppTheme.highestWinsForeground
+                                      : AppTheme.lowestWinsForeground,
+                                ),
+                                const SizedBox(width: 6), // Crisp spacing between icon and labels
+                                Text(
+                                  winnerText,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: _game!.highestScoreWins
+                                        ? AppTheme.highestWinsForeground
+                                        : AppTheme.lowestWinsForeground,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
-                    );
-                  },
-                ),
-          ),
-        ],
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            Icons.edit_outlined,
+                            color: highlightColor,
+                          ),
+                          tooltip: AppLocalizations.of(context)!.renameSession,
+                          onPressed: () {
+                            _showSessionDialog(actualIndex: reversedIndex);
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            color: AppTheme.destructive,
+                          ),
+                          tooltip: AppLocalizations.of(context)!.deleteSession,
+                          onPressed: () {
+                            _showDeleteConfirmationDialog(
+                              reversedIndex,
+                              sessionName,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                    onTap: () {
+                      context.go('/home/${_game!.id}/sessions/$reversedIndex');
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showSessionDialog,
+        child: const Icon(Icons.add),
       ),
     );
   }

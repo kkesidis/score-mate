@@ -323,146 +323,130 @@ class _GameListScreenState extends State<GameListScreen> {
           ],
         ),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(6.0),
-            child: SizedBox(
-              width: double.infinity,
-              height: 50.0,
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.add),
-                label: Text(AppLocalizations.of(context)!.newGame),
-                onPressed: () {
-                  _showGameDialog();
-                },
-              ),
-            ),
-          ),
-          Expanded(
-            child: 
-              sortedGames.isEmpty
-                ? Center(child: Text(AppLocalizations.of(context)!.noGamesYet))
-                : ListView.builder(
-                    itemCount: sortedGames.length,
-                    itemBuilder: (context, index) {
-                      final BoardGame game = sortedGames[index];
-                      final Color highlightColor = game.colorValue != null ? Color(game.colorValue!) : AppTheme.palette.first;
+      body: sortedGames.isEmpty
+        ? Center(child: Text(AppLocalizations.of(context)!.noGamesYet))
+        : ListView.builder(
+            itemCount: sortedGames.length,
+            itemBuilder: (context, index) {
+              final BoardGame game = sortedGames[index];
+              final Color highlightColor = game.colorValue != null ? Color(game.colorValue!) : AppTheme.palette.first;
 
-                      return StylizedCard(
-                        shadowColor: highlightColor,
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
+              return StylizedCard(
+                shadowColor: highlightColor,
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      title: Text(
+                        game.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Row(
                           children: [
-                            ListTile(
-                              title: Text(
-                                game.name,
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                            Tooltip(
+                              message: game.highestScoreWins 
+                                  ? AppLocalizations.of(context)!.highestScoretWins 
+                                  : AppLocalizations.of(context)!.lowestScoretWins,
+                              triggerMode: TooltipTriggerMode.tap, 
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: game.highestScoreWins
+                                      ? AppTheme.highestWins
+                                      : AppTheme.lowestWins,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  game.highestScoreWins 
+                                      ? Icons.trending_up_rounded 
+                                      : Icons.trending_down_rounded,
+                                  size: 16,
+                                  color: game.highestScoreWins
+                                      ? AppTheme.highestWinsForeground
+                                      : AppTheme.lowestWinsForeground,
+                                ),
                               ),
-                              subtitle: Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
-                                child: Row(
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                // rgba(255, 255, 255, 0.07) -> Alpha hex 12
+                                color: const Color(0x12FFFFFF), 
+                                borderRadius: BorderRadius.circular(16), // Match standard chip radius
+                              ),
+                              child: Text.rich(
+                                TextSpan(
                                   children: [
-                                    Tooltip(
-                                      message: game.highestScoreWins 
-                                          ? AppLocalizations.of(context)!.highestScoretWins 
-                                          : AppLocalizations.of(context)!.lowestScoretWins,
-                                      triggerMode: TooltipTriggerMode.tap, 
-                                      child: Container(
-                                        padding: const EdgeInsets.all(8),
-                                        decoration: BoxDecoration(
-                                          color: game.highestScoreWins
-                                              ? AppTheme.highestWins
-                                              : AppTheme.lowestWins,
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        child: Icon(
-                                          game.highestScoreWins 
-                                              ? Icons.trending_up_rounded 
-                                              : Icons.trending_down_rounded,
-                                          size: 16,
-                                          color: game.highestScoreWins
-                                              ? AppTheme.highestWinsForeground
-                                              : AppTheme.lowestWinsForeground,
-                                        ),
+                                    TextSpan(
+                                      text: '${game.sessions.length} ',
+                                      style: TextStyle(
+                                        color: highlightColor,
+                                        fontWeight: FontWeight.w600, // Slightly bolder for visibility
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        // rgba(255, 255, 255, 0.07) -> Alpha hex 12
-                                        color: const Color(0x12FFFFFF), 
-                                        borderRadius: BorderRadius.circular(16), // Match standard chip radius
-                                      ),
-                                      child: Text.rich(
-                                        TextSpan(
-                                          children: [
-                                            TextSpan(
-                                              text: '${game.sessions.length} ',
-                                              style: TextStyle(
-                                                color: highlightColor,
-                                                fontWeight: FontWeight.w600, // Slightly bolder for visibility
-                                              ),
-                                            ),
-                                            TextSpan(
-                                              text: AppLocalizations.of(context)!.sessions,
-                                              style: TextStyle(
-                                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ],
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                          ),
-                                        ),
+                                    TextSpan(
+                                      text: AppLocalizations.of(context)!.sessions,
+                                      style: TextStyle(
+                                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
                                   ],
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.edit_outlined,
-                                      color: highlightColor,
-                                    ),
-                                    tooltip: AppLocalizations.of(context)!.editGame,
-                                    onPressed: () {
-                                      _showGameDialog(existingGame: game);
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.delete_outline,
-                                      color: AppTheme.destructive,
-                                    ),
-                                    tooltip: AppLocalizations.of(context)!.deleteGame,
-                                    onPressed: () {
-                                      _showDeleteConfirmationDialog(game);
-                                    },
-                                  ),
-                                ],
-                              ),
-                              onTap: () {
-                                context.go('/home/${game.id}/sessions');
-                              },
                             ),
                           ],
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              Icons.edit_outlined,
+                              color: highlightColor,
+                            ),
+                            tooltip: AppLocalizations.of(context)!.editGame,
+                            onPressed: () {
+                              _showGameDialog(existingGame: game);
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: AppTheme.destructive,
+                            ),
+                            tooltip: AppLocalizations.of(context)!.deleteGame,
+                            onPressed: () {
+                              _showDeleteConfirmationDialog(game);
+                            },
+                          ),
+                        ],
+                      ),
+                      onTap: () {
+                        context.go('/home/${game.id}/sessions');
+                      },
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
+          ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () =>
+            _showGameDialog(),
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
