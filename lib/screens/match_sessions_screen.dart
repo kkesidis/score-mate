@@ -4,7 +4,6 @@ import '../models/board_game.dart';
 import '../models/app_theme.dart';
 import '../components/stylized_card.dart';
 import 'dart:async';
-import '../helpers/custom_fab_location.dart';
 import 'package:go_router/go_router.dart';
 import '../l10n/app_localizations.dart';
 
@@ -261,210 +260,222 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
           ],
         ),
       ),
-      body: sessions.isEmpty
-          ? Center(child: Text(AppLocalizations.of(context)!.noSessionsYet))
-          : ListView.builder(
-              itemCount: sessions.length,
-              itemBuilder: (context, index) {
-                // REVERSE ORDER LOGIC:
-                // Instead of counting 0, 1, 2... from the front,
-                // we count backwards from the last item in the list.
-                final reversedIndex = sessions.length - 1 - index;
-                final session = sessions[reversedIndex];
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(6.0),
+            child: SizedBox(
+              width: double.infinity,
+              height: 50.0,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.add),
+                label: Text(AppLocalizations.of(context)!.newSession),
+                onPressed: () {
+                  _showSessionDialog();
+                },
+              ),
+            ),
+          ),
+          Expanded(
+            child: sessions.isEmpty
+              ? Center(child: Text(AppLocalizations.of(context)!.noSessionsYet))
+              : ListView.builder(
+                  itemCount: sessions.length,
+                  itemBuilder: (context, index) {
+                    // REVERSE ORDER LOGIC:
+                    // Instead of counting 0, 1, 2... from the front,
+                    // we count backwards from the last item in the list.
+                    final reversedIndex = sessions.length - 1 - index;
+                    final session = sessions[reversedIndex];
 
-                // Use the true list placement index for the default naming fallback
-                final sessionName =
-                    session.name ?? AppLocalizations.of(context)!.indexedSession(reversedIndex + 1);
+                    // Use the true list placement index for the default naming fallback
+                    final sessionName =
+                        session.name ?? AppLocalizations.of(context)!.indexedSession(reversedIndex + 1);
 
-                final sessionDate = session.dateTime != null
-                    ? '${session.dateTime!.day}/${session.dateTime!.month}/${session.dateTime!.year}'
-                    : AppLocalizations.of(context)!.notAvailable;
+                    final sessionDate = session.dateTime != null
+                        ? '${session.dateTime!.day}/${session.dateTime!.month}/${session.dateTime!.year}'
+                        : AppLocalizations.of(context)!.notAvailable;
 
-                final sessionPlayers = session.players ?? [];
+                    final sessionPlayers = session.players ?? [];
 
-                String winnerText = AppLocalizations.of(context)!.noWinnerYet;
-                if (sessionPlayers.isNotEmpty) {
-                  final highestScoreWins = _game!.highestScoreWins;
+                    String winnerText = AppLocalizations.of(context)!.noWinnerYet;
+                    if (sessionPlayers.isNotEmpty) {
+                      final highestScoreWins = _game!.highestScoreWins;
 
-                  // Create a map matching each player to their calculated total score
-                  final playerScores = <PlayerSession, int>{};
-                  for (var player in sessionPlayers) {
-                    final total = player.scores.fold(
-                      0,
-                      (sum, item) => sum + (item.value ?? 0),
-                    );
-                    playerScores[player] = total;
-                  }
+                      // Create a map matching each player to their calculated total score
+                      final playerScores = <PlayerSession, int>{};
+                      for (var player in sessionPlayers) {
+                        final total = player.scores.fold(
+                          0,
+                          (sum, item) => sum + (item.value ?? 0),
+                        );
+                        playerScores[player] = total;
+                      }
 
-                  // Find the winning score value based on game settings
-                  int winningScore = playerScores.values.first;
-                  for (var score in playerScores.values) {
-                    if (highestScoreWins) {
-                      if (score > winningScore) winningScore = score;
-                    } else {
-                      if (score < winningScore) winningScore = score;
+                      // Find the winning score value based on game settings
+                      int winningScore = playerScores.values.first;
+                      for (var score in playerScores.values) {
+                        if (highestScoreWins) {
+                          if (score > winningScore) winningScore = score;
+                        } else {
+                          if (score < winningScore) winningScore = score;
+                        }
+                      }
+
+                      // Collect all players who hit that exact winning score target
+                      final winners = playerScores.entries
+                          .where((entry) => entry.value == winningScore)
+                          .map((entry) => entry.key.playerName ?? AppLocalizations.of(context)!.notAvailable)
+                          .toList();
+
+                      // Format the output string depending on if it's a solo victory or a tie!
+                      if (winners.length > 1) {
+                        winnerText = '${AppLocalizations.of(context)!.tie}: ${winners.join(', ')} ($winningScore)';
+                      } else {
+                        winnerText = '${AppLocalizations.of(context)!.winner}: ${winners.first} ($winningScore)';
+                      }
                     }
-                  }
 
-                  // Collect all players who hit that exact winning score target
-                  final winners = playerScores.entries
-                      .where((entry) => entry.value == winningScore)
-                      .map((entry) => entry.key.playerName ?? AppLocalizations.of(context)!.notAvailable)
-                      .toList();
-
-                  // Format the output string depending on if it's a solo victory or a tie!
-                  if (winners.length > 1) {
-                    winnerText = '${AppLocalizations.of(context)!.tie}: ${winners.join(', ')} ($winningScore)';
-                  } else {
-                    winnerText = '${AppLocalizations.of(context)!.winner}: ${winners.first} ($winningScore)';
-                  }
-                }
-
-                return StylizedCard(
-                  shadowColor: highlightColor,
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ListTile(
-                        title: Text(
-                          sessionName,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          winnerText,
-                          style: const TextStyle(color: AppTheme.mutedForeground),
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(
-                                Icons.edit_outlined,
-                                color: highlightColor,
-                              ),
-                              tooltip: AppLocalizations.of(context)!.renameSession,
-                              onPressed: () {
-                                _showSessionDialog(actualIndex: reversedIndex);
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.delete_outline,
-                                color: AppTheme.destructive,
-                              ),
-                              tooltip: AppLocalizations.of(context)!.deleteSession,
-                              onPressed: () {
-                                _showDeleteConfirmationDialog(
-                                  reversedIndex,
-                                  sessionName,
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                        onTap: () {
-                          context.go('/home/${_game!.id}/sessions/$reversedIndex');
-                        },
+                    return StylizedCard(
+                      shadowColor: highlightColor,
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
                       ),
-
-                      const SizedBox(height: 4),
-
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 10.0,
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                // Match your standard chip background filter: rgba(255, 255, 255, 0.07)
-                                color: const Color(0x12FFFFFF), 
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min, // Wraps container tightly around the contents
-                                children: [
-                                  Icon(
-                                    Icons.calendar_today_outlined,
-                                    size: 13, // Slightly adjusted down for balanced layout scale
-                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    sessionDate, // Outputs just the raw dynamic date
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ListTile(
+                            title: Text(
+                              sessionName,
+                              style: const TextStyle(fontWeight: FontWeight.bold),
                             ),
-
-                            const SizedBox(width: 8),
-
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                // Match your standard chip background filter: rgba(255, 255, 255, 0.07)
-                                color: const Color(0x12FFFFFF), 
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min, // Wraps container tightly around the content
-                                children: [
-                                  Icon(
-                                    Icons.people_outline,
-                                    size: 13, // Balanced layout scale matching the date chip
-                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                            subtitle: Text(
+                              winnerText,
+                              style: const TextStyle(color: AppTheme.mutedForeground),
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.edit_outlined,
+                                    color: highlightColor,
                                   ),
-                                  const SizedBox(width: 6),
-                                  Text.rich(
-                                    TextSpan(
-                                      children: [
+                                  tooltip: AppLocalizations.of(context)!.renameSession,
+                                  onPressed: () {
+                                    _showSessionDialog(actualIndex: reversedIndex);
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete_outline,
+                                    color: AppTheme.destructive,
+                                  ),
+                                  tooltip: AppLocalizations.of(context)!.deleteSession,
+                                  onPressed: () {
+                                    _showDeleteConfirmationDialog(
+                                      reversedIndex,
+                                      sessionName,
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                            onTap: () {
+                              context.go('/home/${_game!.id}/sessions/$reversedIndex');
+                            },
+                          ),
+
+                          const SizedBox(height: 4),
+
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 10.0,
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    // Match your standard chip background filter: rgba(255, 255, 255, 0.07)
+                                    color: const Color(0x12FFFFFF), 
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min, // Wraps container tightly around the contents
+                                    children: [
+                                      Icon(
+                                        Icons.calendar_today_outlined,
+                                        size: 13, // Slightly adjusted down for balanced layout scale
+                                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        sessionDate, // Outputs just the raw dynamic date
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                const SizedBox(width: 8),
+
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    // Match your standard chip background filter: rgba(255, 255, 255, 0.07)
+                                    color: const Color(0x12FFFFFF), 
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min, // Wraps container tightly around the content
+                                    children: [
+                                      Icon(
+                                        Icons.people_outline,
+                                        size: 13, // Balanced layout scale matching the date chip
+                                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text.rich(
                                         TextSpan(
-                                          text: '${sessionPlayers.length} ',
-                                          style: const TextStyle(
-                                            color: AppTheme.primary,
-                                            fontWeight: FontWeight.w600, // Highlights the count number matching your first chip design
+                                          children: [
+                                            TextSpan(
+                                              text: '${sessionPlayers.length} ',
+                                              style: const TextStyle(
+                                                color: AppTheme.primary,
+                                                fontWeight: FontWeight.w600, // Highlights the count number matching your first chip design
+                                              ),
+                                            ),
+                                            TextSpan(
+                                              text: AppLocalizations.of(context)!.players,
+                                            ),
+                                          ],
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                           ),
                                         ),
-                                        TextSpan(
-                                          text: AppLocalizations.of(context)!.players,
-                                        ),
-                                      ],
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                            )
-                          ],
-                        ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
-      floatingActionButtonLocation: const CustomFabLocation(
-        offsetY: 80.0, 
-        offsetX: 6.0,
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showSessionDialog,
-        child: const Icon(Icons.add),
+                    );
+                  },
+                ),
+          ),
+        ],
       ),
     );
   }
