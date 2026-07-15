@@ -169,6 +169,30 @@ class ScoreDenApp extends StatelessWidget {
                 ),
               )
             ),
+            tooltipTheme: TooltipThemeData(
+              preferBelow: false, // Prevents finger/thumb from blocking the popup
+              triggerMode: TooltipTriggerMode.tap, // Instant tap response on mobile
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              margin: const EdgeInsets.only(top: 8),
+              decoration: BoxDecoration(
+                color: AppTheme.background,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.background.withValues(alpha: 0.2),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              
+              // Styling the text inside the global tooltip
+              textStyle: const TextStyle(
+                color: AppTheme.foreground,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ),
         );
       }

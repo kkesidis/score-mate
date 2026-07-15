@@ -83,7 +83,6 @@ class _GameListScreenState extends State<GameListScreen> {
 
   void _showGameDialog({BoardGame? existingGame}) {
     final nameController = TextEditingController();
-    final descController = TextEditingController();
     bool highestWins = true;
     Color currentColor = AppTheme.palette.first;
 
@@ -91,7 +90,6 @@ class _GameListScreenState extends State<GameListScreen> {
     final isEditing = existingGame != null;
     if (isEditing) {
       nameController.text = existingGame.name;
-      descController.text = existingGame.description ?? '';
       highestWins = existingGame.highestScoreWins;
       currentColor = existingGame.colorValue != null ? Color(existingGame.colorValue!) : currentColor;
     }
@@ -146,17 +144,6 @@ class _GameListScreenState extends State<GameListScreen> {
                     onColorSelected: (newColor) {
                       currentColor = newColor; 
                     },
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  TextField(
-                    controller: descController,
-                    textCapitalization: TextCapitalization.sentences,
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.gameDescriptionLabel,
-                      hintText: AppLocalizations.of(context)!.gameDescriptionHint,
-                    ),
                   ),
 
                   const SizedBox(height: 15),
@@ -287,10 +274,6 @@ class _GameListScreenState extends State<GameListScreen> {
                               : BoardGame();
 
                           gameToSave.name = nameController.text.trim();
-                          gameToSave.description =
-                              descController.text.trim().isEmpty
-                              ? null
-                              : descController.text.trim();
                           gameToSave.highestScoreWins = highestWins;
                           gameToSave.colorValue = currentColor.toARGB32();
 
@@ -380,9 +363,68 @@ class _GameListScreenState extends State<GameListScreen> {
                                 game.name,
                                 style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
-                              subtitle: Text(
-                                game.description ?? AppLocalizations.of(context)!.notAvailable,
-                                style: const TextStyle(color: AppTheme.mutedForeground),
+                              subtitle: Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Row(
+                                  children: [
+                                    Tooltip(
+                                      message: game.highestScoreWins 
+                                          ? AppLocalizations.of(context)!.highestScoretWins 
+                                          : AppLocalizations.of(context)!.lowestScoretWins,
+                                      triggerMode: TooltipTriggerMode.tap, 
+                                      child: Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: game.highestScoreWins
+                                              ? AppTheme.highestWins
+                                              : AppTheme.lowestWins,
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: Icon(
+                                          game.highestScoreWins 
+                                              ? Icons.trending_up_rounded 
+                                              : Icons.trending_down_rounded,
+                                          size: 16,
+                                          color: game.highestScoreWins
+                                              ? AppTheme.highestWinsForeground
+                                              : AppTheme.lowestWinsForeground,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        // rgba(255, 255, 255, 0.07) -> Alpha hex 12
+                                        color: const Color(0x12FFFFFF), 
+                                        borderRadius: BorderRadius.circular(16), // Match standard chip radius
+                                      ),
+                                      child: Text.rich(
+                                        TextSpan(
+                                          children: [
+                                            TextSpan(
+                                              text: '${game.sessions.length} ',
+                                              style: TextStyle(
+                                                color: highlightColor,
+                                                fontWeight: FontWeight.w600, // Slightly bolder for visibility
+                                              ),
+                                            ),
+                                            TextSpan(
+                                              text: AppLocalizations.of(context)!.sessions,
+                                              style: TextStyle(
+                                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -412,89 +454,6 @@ class _GameListScreenState extends State<GameListScreen> {
                               onTap: () {
                                 context.go('/home/${game.id}/sessions');
                               },
-                            ),
-
-                            const SizedBox(height: 4),
-
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16.0,
-                                vertical: 10.0,
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      // rgba(255, 255, 255, 0.07) -> Alpha hex 12
-                                      color: const Color(0x12FFFFFF), 
-                                      borderRadius: BorderRadius.circular(16), // Match standard chip radius
-                                    ),
-                                    child: Text.rich(
-                                      TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: '${game.sessions.length} ',
-                                            style: TextStyle(
-                                              color: highlightColor,
-                                              fontWeight: FontWeight.w600, // Slightly bolder for visibility
-                                            ),
-                                          ),
-                                          TextSpan(
-                                            text: AppLocalizations.of(context)!.sessions,
-                                            style: TextStyle(
-                                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-
-                                  const SizedBox(width: 8),
-
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                    decoration: BoxDecoration(
-                                      // Evaluates your custom win condition themes built earlier
-                                      color: game.highestScoreWins
-                                          ? AppTheme.highestWins
-                                          : AppTheme.lowestWins,
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min, // Prevents chip from stretching full-width
-                                      children: [
-                                        Icon(
-                                          // Dynamic icons mapping to the ruleset structure
-                                          game.highestScoreWins 
-                                              ? Icons.trending_up_rounded 
-                                              : Icons.trending_down_rounded,
-                                          size: 14,
-                                          color: game.highestScoreWins
-                                              ? AppTheme.highestWinsForeground
-                                              : AppTheme.lowestWinsForeground,
-                                        ),
-                                        const SizedBox(width: 6), // Crisp spacing between icon and labels
-                                        Text(
-                                          game.highestScoreWins ? AppLocalizations.of(context)!.highestScoretWins : AppLocalizations.of(context)!.lowestScoretWins,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                            color: game.highestScoreWins
-                                                ? AppTheme.highestWinsForeground
-                                                : AppTheme.lowestWinsForeground,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
                             ),
                           ],
                         ),
