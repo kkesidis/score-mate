@@ -193,6 +193,22 @@ class ScoreDenApp extends StatelessWidget {
                 fontWeight: FontWeight.w500,
               ),
             ),
+            snackBarTheme: SnackBarThemeData(
+              behavior: SnackBarBehavior.floating, 
+              backgroundColor: AppTheme.muted, // Dark background
+              actionTextColor: AppTheme.mutedForeground,      // Color for the action button text
+              disabledActionTextColor: Colors.grey,
+              contentTextStyle: const TextStyle(
+                color: AppTheme.mutedForeground,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 6,
+              insetPadding: const EdgeInsets.all(12),
+            ),
           ),
         );
       }
