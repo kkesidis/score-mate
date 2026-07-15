@@ -5,6 +5,7 @@ import '../models/app_theme.dart';
 import '../components/stylized_card.dart';
 import '../l10n/app_localizations.dart';
 import '../components/color_picker_field.dart';
+import '../components/custom_app_bar.dart';
 
 enum ScoreOp { add, subtract }
 
@@ -802,7 +803,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: CustomAppBar(
         title: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -821,7 +822,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
             ),
           ],
         ),
-        actions: [
+        additionalActions: [
           if (basePlayers.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.replay),

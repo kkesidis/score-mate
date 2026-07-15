@@ -6,6 +6,7 @@ import '../components/stylized_card.dart';
 import 'dart:async';
 import 'package:go_router/go_router.dart';
 import '../l10n/app_localizations.dart';
+import '../components/custom_app_bar.dart';
 
 class MatchSessionsScreen extends StatefulWidget {
   final int gameId;
@@ -240,7 +241,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
     final highlightColor = _game?.colorValue != null ? Color(_game!.colorValue!) : AppTheme.palette.first;
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: CustomAppBar(
         title: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

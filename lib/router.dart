@@ -3,7 +3,6 @@ import 'package:score_den/screens/language_screen.dart';
 import 'screens/game_list_screen.dart';
 import 'screens/match_sessions_screen.dart';
 import 'screens/player_scores_screen.dart';
-import 'screens/settings_screen.dart';
 import 'components/navigation_bar.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -11,7 +10,7 @@ final GoRouter appRouter = GoRouter(
   routes: [
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
-        return ScaffoldWithNavBar(navigationShell: navigationShell);
+        return ScaffoldWithDrawer(navigationShell: navigationShell);
       },
       branches: [
         StatefulShellBranch(
@@ -51,16 +50,8 @@ final GoRouter appRouter = GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/settings',
-              builder: (context, state) => const SettingsScreen(),
-              routes: [
-                GoRoute(
-                  path: 'language',
-                  builder: (context, state) {
-                    return const LanguageScreen();
-                  },
-                )
-              ]
+              path: '/language',
+              builder: (context, state) => const LanguageScreen(),
             ),
           ],
         ),

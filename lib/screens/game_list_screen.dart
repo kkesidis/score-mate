@@ -7,7 +7,7 @@ import '../components/stylized_card.dart';
 import 'package:go_router/go_router.dart';
 import '../l10n/app_localizations.dart';
 import '../components/color_picker_field.dart';
-
+import '../components/custom_app_bar.dart';
 
 class GameListScreen extends StatefulWidget {
   const GameListScreen({super.key});
@@ -303,7 +303,7 @@ class _GameListScreenState extends State<GameListScreen> {
     );
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: CustomAppBar(
         title: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

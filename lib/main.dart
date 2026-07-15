@@ -209,6 +209,49 @@ class ScoreDenApp extends StatelessWidget {
               elevation: 6,
               insetPadding: const EdgeInsets.all(12),
             ),
+            drawerTheme: const DrawerThemeData(
+              backgroundColor: AppTheme.sidebar,
+              endShape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(32.0),
+                  bottomLeft: Radius.circular(32.0),
+                ),
+              ),
+              elevation: 16.0,
+            ),
+            navigationDrawerTheme: NavigationDrawerThemeData(
+              backgroundColor: AppTheme.sidebar,
+              indicatorColor: AppTheme.sidebarPrimary,
+              indicatorShape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.0),
+              ),
+              labelTextStyle: WidgetStateProperty.resolveWith<TextStyle?>((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: AppTheme.sidebarPrimaryForeground, // Active text color
+                  );
+                }
+                return const TextStyle(
+                  fontWeight: FontWeight.normal,
+                  fontSize: 14,
+                  color: AppTheme.sidebarForeground, // Inactive text color
+                );
+              }),
+              iconTheme: WidgetStateProperty.resolveWith<IconThemeData?>((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return const IconThemeData(
+                    color: AppTheme.sidebarPrimaryForeground, // Active icon color
+                    size: 24,
+                  );
+                }
+                return const IconThemeData(
+                  color: AppTheme.sidebarForeground, // Inactive icon color
+                  size: 24,
+                );
+              }),
+            ),
           ),
         );
       }
