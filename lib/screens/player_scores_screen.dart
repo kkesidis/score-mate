@@ -56,7 +56,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
   void _showPlayerFormBottomSheet({int? playerIndexInDatabase}) {
     final nameController = TextEditingController();
     final bool isEditing = playerIndexInDatabase != null;
-    Color _currentColor = AppTheme.palette.first;
+    Color currentColor = AppTheme.palette.first;
 
     // 1. SETUP WORKFLOW MODE CONDITIONS
     if (isEditing) {
@@ -66,7 +66,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       nameController.text = targetPlayer.playerName ?? AppLocalizations.of(context)!.genericPlayerName;
 
       final inheritedColor = targetPlayer.playerColorValue ?? _game?.colorValue;
-      _currentColor = inheritedColor != null ? Color(inheritedColor) : _currentColor;
+      currentColor = inheritedColor != null ? Color(inheritedColor) : currentColor;
     }
 
     showModalBottomSheet(
@@ -116,9 +116,9 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                   const SizedBox(height: 10),
 
                   ColorPickerField(
-                    initialColor: _currentColor,
+                    initialColor: currentColor,
                     onColorSelected: (newColor) {
-                      _currentColor = newColor; 
+                      currentColor = newColor; 
                     },
                   ),
 
@@ -155,13 +155,13 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                             final targetPlayer =
                                 playersList[playerIndexInDatabase];
                             targetPlayer.playerName = textInput;
-                            targetPlayer.playerColorValue = _currentColor.toARGB32();
+                            targetPlayer.playerColorValue = currentColor.toARGB32();
                             playersList[playerIndexInDatabase] = targetPlayer;
                           } else {
                             // 2B. APPEND A NEW PLAYER PROFILE
                             final newPlayerSession = PlayerSession()
                               ..playerName = textInput
-                               ..playerColorValue = _currentColor.toARGB32()
+                               ..playerColorValue = currentColor.toARGB32()
                               ..scores = [];
                             playersList.add(newPlayerSession);
                           }

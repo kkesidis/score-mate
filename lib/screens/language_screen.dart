@@ -25,7 +25,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
             const Text('ScoreDen'),
             const SizedBox(height: 2),
             Text(
-              l10n!.language, 
+              l10n.language, 
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w400,

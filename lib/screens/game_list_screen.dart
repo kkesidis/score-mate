@@ -86,7 +86,7 @@ class _GameListScreenState extends State<GameListScreen> {
     final nameController = TextEditingController();
     final descController = TextEditingController();
     bool highestWins = true;
-    Color _currentColor = AppTheme.palette.first;
+    Color currentColor = AppTheme.palette.first;
 
     // If we are editing, pre-fill the form fields with the current values
     final isEditing = existingGame != null;
@@ -94,7 +94,7 @@ class _GameListScreenState extends State<GameListScreen> {
       nameController.text = existingGame.name;
       descController.text = existingGame.description ?? '';
       highestWins = existingGame.highestScoreWins;
-      _currentColor = existingGame.colorValue != null ? Color(existingGame.colorValue!) : _currentColor;
+      currentColor = existingGame.colorValue != null ? Color(existingGame.colorValue!) : currentColor;
     }
 
     showModalBottomSheet(
@@ -143,9 +143,9 @@ class _GameListScreenState extends State<GameListScreen> {
                   const SizedBox(height: 10),
 
                   ColorPickerField(
-                    initialColor: _currentColor,
+                    initialColor: currentColor,
                     onColorSelected: (newColor) {
-                      _currentColor = newColor; 
+                      currentColor = newColor; 
                     },
                   ),
 
@@ -293,7 +293,7 @@ class _GameListScreenState extends State<GameListScreen> {
                               ? null
                               : descController.text.trim();
                           gameToSave.highestScoreWins = highestWins;
-                          gameToSave.colorValue = _currentColor.toARGB32();
+                          gameToSave.colorValue = currentColor.toARGB32();
 
                           await isar.writeTxn(() async {
                             await isar.boardGames.put(gameToSave);
