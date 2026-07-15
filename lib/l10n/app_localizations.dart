@@ -320,18 +320,6 @@ abstract class AppLocalizations {
   /// **'No winner yet'**
   String get noWinnerYet;
 
-  /// No description provided for @tie.
-  ///
-  /// In en, this message translates to:
-  /// **'Tie'**
-  String get tie;
-
-  /// No description provided for @winner.
-  ///
-  /// In en, this message translates to:
-  /// **'Winner'**
-  String get winner;
-
   /// No description provided for @players.
   ///
   /// In en, this message translates to:

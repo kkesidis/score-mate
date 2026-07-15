@@ -37,8 +37,6 @@
   "sessionRemoved": "Session removed",
   "noSessionsYet": "No sessions recorded for this game.",
   "noWinnerYet": "No winner yet",
-  "tie": "Tie",
-  "winner": "Winner",
   "players": "players",
   "renamePlayer": "Rename Player",
   "addPlayer": "Add Player",

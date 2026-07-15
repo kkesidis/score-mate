@@ -130,12 +130,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noWinnerYet => 'No winner yet';
 
   @override
-  String get tie => 'Tie';
-
-  @override
-  String get winner => 'Winner';
-
-  @override
   String get players => 'players';
 
   @override

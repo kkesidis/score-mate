@@ -132,12 +132,6 @@ class AppLocalizationsEl extends AppLocalizations {
   String get noWinnerYet => 'Δεν υπάρχει νικητής ακόμα';
 
   @override
-  String get tie => 'Ισοπαλία';
-
-  @override
-  String get winner => 'Νικητής';
-
-  @override
   String get players => 'παίκτες';
 
   @override

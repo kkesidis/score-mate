@@ -330,9 +330,9 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
 
                       // Format the output string depending on if it's a solo victory or a tie!
                       if (winners.length > 1) {
-                        winnerText = '${AppLocalizations.of(context)!.tie}: ${winners.join(', ')} ($winningScore)';
+                        winnerText = '${winners.join(', ')} ($winningScore)';
                       } else {
-                        winnerText = '${AppLocalizations.of(context)!.winner}: ${winners.first} ($winningScore)';
+                        winnerText = '${winners.first} ($winningScore)';
                       }
                     }
 
@@ -346,13 +346,100 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           ListTile(
-                            title: Text(
-                              sessionName,
-                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            title: Wrap(
+                              spacing: 8.0,
+                              children: [
+                                Text(
+                                  sessionName,
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  sessionDate,
+                                  style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 14),
+                                )
+                              ],
                             ),
-                            subtitle: Text(
-                              winnerText,
-                              style: const TextStyle(color: AppTheme.mutedForeground),
+                            subtitle: Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Wrap(
+                                spacing: 8.0,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      // Match your standard chip background filter: rgba(255, 255, 255, 0.07)
+                                      color: const Color(0x12FFFFFF), 
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min, // Wraps container tightly around the content
+                                      children: [
+                                        Icon(
+                                          Icons.people_outline,
+                                          size: 13, // Balanced layout scale matching the date chip
+                                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text.rich(
+                                          TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: '${sessionPlayers.length} ',
+                                                style: const TextStyle(
+                                                  color: AppTheme.primary,
+                                                  fontWeight: FontWeight.w600, // Highlights the count number matching your first chip design
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: AppLocalizations.of(context)!.players,
+                                              ),
+                                            ],
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: _game!.highestScoreWins
+                                          ? AppTheme.highestWins
+                                          : AppTheme.lowestWins,
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min, // Prevents chip from stretching full-width
+                                      children: [
+                                        Icon(
+                                          _game!.highestScoreWins 
+                                              ? Icons.trending_up_rounded 
+                                              : Icons.trending_down_rounded,
+                                          size: 14,
+                                          color: _game!.highestScoreWins
+                                              ? AppTheme.highestWinsForeground
+                                              : AppTheme.lowestWinsForeground,
+                                        ),
+                                        const SizedBox(width: 6), // Crisp spacing between icon and labels
+                                        Text(
+                                          winnerText,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: _game!.highestScoreWins
+                                                ? AppTheme.highestWinsForeground
+                                                : AppTheme.lowestWinsForeground,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -385,89 +472,6 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
                             onTap: () {
                               context.go('/home/${_game!.id}/sessions/$reversedIndex');
                             },
-                          ),
-
-                          const SizedBox(height: 4),
-
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16.0,
-                              vertical: 10.0,
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    // Match your standard chip background filter: rgba(255, 255, 255, 0.07)
-                                    color: const Color(0x12FFFFFF), 
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min, // Wraps container tightly around the contents
-                                    children: [
-                                      Icon(
-                                        Icons.calendar_today_outlined,
-                                        size: 13, // Slightly adjusted down for balanced layout scale
-                                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        sessionDate, // Outputs just the raw dynamic date
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                                const SizedBox(width: 8),
-
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    // Match your standard chip background filter: rgba(255, 255, 255, 0.07)
-                                    color: const Color(0x12FFFFFF), 
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min, // Wraps container tightly around the content
-                                    children: [
-                                      Icon(
-                                        Icons.people_outline,
-                                        size: 13, // Balanced layout scale matching the date chip
-                                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text.rich(
-                                        TextSpan(
-                                          children: [
-                                            TextSpan(
-                                              text: '${sessionPlayers.length} ',
-                                              style: const TextStyle(
-                                                color: AppTheme.primary,
-                                                fontWeight: FontWeight.w600, // Highlights the count number matching your first chip design
-                                              ),
-                                            ),
-                                            TextSpan(
-                                              text: AppLocalizations.of(context)!.players,
-                                            ),
-                                          ],
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              ],
-                            ),
                           ),
                         ],
                       ),
