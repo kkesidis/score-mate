@@ -32,6 +32,10 @@ class PlayerSession {
   int? playerColorValue;
 
   List<ScoreEntry> scores = [];
+
+  int get totalScore {
+    return scores.fold(0, (sum, entry) => sum + (entry.value ?? 0)); 
+  }
 }
 
 @embedded

@@ -130,12 +130,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noWinnerYet => 'No winner yet';
 
   @override
-  String get tie => 'Tie';
-
-  @override
-  String get winner => 'Winner';
-
-  @override
   String get players => 'players';
 
   @override
@@ -201,9 +195,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get noPlayersAddedYet =>
       'No players added yet. Tap + to add participants!';
-
-  @override
-  String get score => 'Score';
 
   @override
   String get editPlayer => 'Edit Player';

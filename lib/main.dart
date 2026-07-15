@@ -156,6 +156,89 @@ class ScoreDenApp extends StatelessWidget {
               thickness: 1.0,
               space: 1.0,
             ),
+            tooltipTheme: TooltipThemeData(
+              preferBelow: false, // Prevents finger/thumb from blocking the popup
+              triggerMode: TooltipTriggerMode.tap, // Instant tap response on mobile
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              margin: const EdgeInsets.only(top: 8),
+              decoration: BoxDecoration(
+                color: AppTheme.background,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.background.withValues(alpha: 0.2),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              
+              // Styling the text inside the global tooltip
+              textStyle: const TextStyle(
+                color: AppTheme.foreground,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            snackBarTheme: SnackBarThemeData(
+              behavior: SnackBarBehavior.floating, 
+              backgroundColor: AppTheme.muted, // Dark background
+              actionTextColor: AppTheme.mutedForeground,      // Color for the action button text
+              disabledActionTextColor: Colors.grey,
+              contentTextStyle: const TextStyle(
+                color: AppTheme.mutedForeground,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              elevation: 6,
+              insetPadding: const EdgeInsets.all(12),
+            ),
+            drawerTheme: const DrawerThemeData(
+              backgroundColor: AppTheme.sidebar,
+              endShape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(32.0),
+                  bottomLeft: Radius.circular(32.0),
+                ),
+              ),
+              elevation: 16.0,
+            ),
+            navigationDrawerTheme: NavigationDrawerThemeData(
+              backgroundColor: AppTheme.sidebar,
+              indicatorColor: AppTheme.sidebarPrimary,
+              indicatorShape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.0),
+              ),
+              labelTextStyle: WidgetStateProperty.resolveWith<TextStyle?>((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: AppTheme.sidebarPrimaryForeground, // Active text color
+                  );
+                }
+                return const TextStyle(
+                  fontWeight: FontWeight.normal,
+                  fontSize: 14,
+                  color: AppTheme.sidebarForeground, // Inactive text color
+                );
+              }),
+              iconTheme: WidgetStateProperty.resolveWith<IconThemeData?>((states) {
+                if (states.contains(WidgetState.selected)) {
+                  return const IconThemeData(
+                    color: AppTheme.sidebarPrimaryForeground, // Active icon color
+                    size: 24,
+                  );
+                }
+                return const IconThemeData(
+                  color: AppTheme.sidebarForeground, // Inactive icon color
+                  size: 24,
+                );
+              }),
+            ),
           ),
         );
       }

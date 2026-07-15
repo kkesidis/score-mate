@@ -132,12 +132,6 @@ class AppLocalizationsEl extends AppLocalizations {
   String get noWinnerYet => 'Δεν υπάρχει νικητής ακόμα';
 
   @override
-  String get tie => 'Ισοπαλία';
-
-  @override
-  String get winner => 'Νικητής';
-
-  @override
   String get players => 'παίκτες';
 
   @override
@@ -204,9 +198,6 @@ class AppLocalizationsEl extends AppLocalizations {
   @override
   String get noPlayersAddedYet =>
       'Δεν έχουν προστεθεί παίκτες ακόμα. Πατήστε το + για να προσθέσετε συμμετέχοντες!';
-
-  @override
-  String get score => 'Σκορ';
 
   @override
   String get editPlayer => 'Επεξεργασία παίκτη';

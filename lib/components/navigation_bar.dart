@@ -1,11 +1,11 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../models/app_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../state/app_state.dart';
 
-class ScaffoldWithNavBar extends StatelessWidget {
-  const ScaffoldWithNavBar({
+class ScaffoldWithDrawer extends StatelessWidget {
+  const ScaffoldWithDrawer({
     required this.navigationShell,
     super.key,
   });
@@ -15,97 +15,88 @@ class ScaffoldWithNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBody: true,
+      key: drawerScaffoldKey,
       body: navigationShell,
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(left: 6.0, right: 6.0, bottom: 6.0),
-          child: Container(
+      endDrawer: NavigationDrawer(
+        selectedIndex: navigationShell.currentIndex,
+        onDestinationSelected: (int index) {
+          Navigator.of(context).pop(); 
+          navigationShell.goBranch(index);
+        },
+        children: [
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.only(
+              left: 24.0,
+              right: 16.0,
+              top: MediaQuery.of(context).padding.top + 24.0,
+              bottom: 24.0,
+            ),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24.0),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.08),
-                width: 1.0,
-              ),
               gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
                 colors: [
-                  Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
-                  Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.95),
+                  AppTheme.sidebarAccent,
+                  AppTheme.sidebarAccent.withValues(alpha: 0.8),
                 ],
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(32.0), 
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'ScoreDen',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                    color: AppTheme.sidebarAccentForeground,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Board Game Score Tracker',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w400,
+                    color: AppTheme.sidebarAccentForeground.withValues(alpha: 0.7),
+                  ),
                 ),
               ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24.0),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: BottomNavigationBar(
-                    currentIndex: navigationShell.currentIndex,
-                    onTap: (int index) {
-                      navigationShell.goBranch(index);
-                    },
-                    
-                    elevation: 0,
-                    backgroundColor: Colors.transparent,
-                    type: BottomNavigationBarType.fixed,
-                    
-                    selectedItemColor: AppTheme.primary,
-                    unselectedItemColor: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.38),
-                    
-                    selectedLabelStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.3,
-                    ),
-                    unselectedLabelStyle: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: 0.3,
-                    ),
-                    
-                    items: [
-                      BottomNavigationBarItem(
-                        icon: const Padding(
-                          padding: EdgeInsets.only(bottom: 4.0),
-                          child: Icon(Icons.home_outlined),
-                        ),
-                        activeIcon: const Padding(
-                          padding: EdgeInsets.only(bottom: 4.0),
-                          child: Icon(Icons.home),
-                        ),
-                        label: AppLocalizations.of(context)!.home,
-                      ),
-                      BottomNavigationBarItem(
-                        icon: const Padding(
-                          padding: EdgeInsets.only(bottom: 4.0),
-                          child: Icon(Icons.settings_outlined),
-                        ),
-                        activeIcon: const Padding(
-                          padding: EdgeInsets.only(bottom: 4.0),
-                          child: Icon(Icons.settings),
-                        ),
-                        label: AppLocalizations.of(context)!.settings,
-                      ),
-                    ],
+          ),
+          
+          const SizedBox(height: 12),
+
+          NavigationDrawerDestination(
+            icon: const Icon(Icons.home_outlined),
+            selectedIcon: const Icon(Icons.home),
+            label: Text(AppLocalizations.of(context)!.home),
+          ),
+          NavigationDrawerDestination(
+            icon: const Icon(Icons.translate_outlined),
+            selectedIcon: const Icon(Icons.translate),
+            label: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(AppLocalizations.of(context)!.language),
+                Text(
+                  AppLocalizations.of(context)!.languageName,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5,),
                   ),
                 ),
-              ),
+              ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }

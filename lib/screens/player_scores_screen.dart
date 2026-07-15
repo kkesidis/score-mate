@@ -3,9 +3,9 @@ import '../main.dart';
 import '../models/board_game.dart';
 import '../models/app_theme.dart';
 import '../components/stylized_card.dart';
-import '../helpers/custom_fab_location.dart';
 import '../l10n/app_localizations.dart';
 import '../components/color_picker_field.dart';
+import '../components/custom_app_bar.dart';
 
 enum ScoreOp { add, subtract }
 
@@ -48,15 +48,10 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
     });
   }
 
-  // Combines all historical values inside the scores array
-  int _calculateTotalScore(PlayerSession playerSession) {
-    return playerSession.scores.fold(0, (sum, item) => sum + (item.value ?? 0));
-  }
-
   void _showPlayerFormBottomSheet({int? playerIndexInDatabase}) {
     final nameController = TextEditingController();
     final bool isEditing = playerIndexInDatabase != null;
-    Color _currentColor = AppTheme.palette.first;
+    Color currentColor = AppTheme.palette.first;
 
     // 1. SETUP WORKFLOW MODE CONDITIONS
     if (isEditing) {
@@ -66,7 +61,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       nameController.text = targetPlayer.playerName ?? AppLocalizations.of(context)!.genericPlayerName;
 
       final inheritedColor = targetPlayer.playerColorValue ?? _game?.colorValue;
-      _currentColor = inheritedColor != null ? Color(inheritedColor) : _currentColor;
+      currentColor = inheritedColor != null ? Color(inheritedColor) : currentColor;
     }
 
     showModalBottomSheet(
@@ -116,9 +111,9 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                   const SizedBox(height: 10),
 
                   ColorPickerField(
-                    initialColor: _currentColor,
+                    initialColor: currentColor,
                     onColorSelected: (newColor) {
-                      _currentColor = newColor; 
+                      currentColor = newColor; 
                     },
                   ),
 
@@ -155,13 +150,13 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                             final targetPlayer =
                                 playersList[playerIndexInDatabase];
                             targetPlayer.playerName = textInput;
-                            targetPlayer.playerColorValue = _currentColor.toARGB32();
+                            targetPlayer.playerColorValue = currentColor.toARGB32();
                             playersList[playerIndexInDatabase] = targetPlayer;
                           } else {
                             // 2B. APPEND A NEW PLAYER PROFILE
                             final newPlayerSession = PlayerSession()
                               ..playerName = textInput
-                               ..playerColorValue = _currentColor.toARGB32()
+                               ..playerColorValue = currentColor.toARGB32()
                               ..scores = [];
                             playersList.add(newPlayerSession);
                           }
@@ -792,25 +787,23 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
     final currentMatchSession = _game!.sessions[widget.sessionIndex];
     final basePlayers = currentMatchSession.players ?? <PlayerSession>[];
+    int? topPlayerIndex;
 
     final List<MapEntry<int, PlayerSession>> indexedPlayers = basePlayers
         .asMap()
         .entries
         .toList();
 
-    // Sort leaderboard by accumulated score total totals
-    indexedPlayers.sort((a, b) {
-      final totalA = _calculateTotalScore(a.value);
-      final totalB = _calculateTotalScore(b.value);
-      if (_game!.highestScoreWins) {
-        return totalB.compareTo(totalA);
-      } else {
-        return totalA.compareTo(totalB);
-      }
-    });
+    if (indexedPlayers.isNotEmpty) {
+      final MapEntry<int, PlayerSession> topPlayerEntry = indexedPlayers.reduce((currentMax, next) {
+        return next.value.totalScore > currentMax.value.totalScore ? next : currentMax;
+      });
+
+      topPlayerIndex = topPlayerEntry.key;
+    }
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: CustomAppBar(
         title: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -829,7 +822,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
             ),
           ],
         ),
-        actions: [
+        additionalActions: [
           if (basePlayers.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.replay),
@@ -839,119 +832,73 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
         ],
       ),
       body: indexedPlayers.isEmpty
-          ? Center(
-              child: Text(AppLocalizations.of(context)!.noPlayersAddedYet),
-            )
-          : ListView.builder(
-              itemCount: indexedPlayers.length,
-              itemBuilder: (context, index) {
-                final entry = indexedPlayers[index];
-                final trueIndexInDatabase = entry.key;
-                final playerSession = entry.value;
+        ? Center(child: Text(AppLocalizations.of(context)!.noPlayersAddedYet),)
+        : ListView.builder(
+            itemCount: indexedPlayers.length,
+            itemBuilder: (context, index) {
+              final entry = indexedPlayers[index];
+              final trueIndexInDatabase = entry.key;
+              final playerSession = entry.value;
 
-                final playerName = playerSession.playerName ?? AppLocalizations.of(context)!.genericPlayerName;
-                final totalScore = _calculateTotalScore(playerSession);
-                final rank = index + 1;
+              final playerName = playerSession.playerName ?? AppLocalizations.of(context)!.genericPlayerName;
+              final isWinner = topPlayerIndex == index;
 
-                // Show a mini tally of how many point entries they have logged total
-                final totalRounds = playerSession.scores.length;
+              // Show a mini tally of how many point entries they have logged total
+              final totalRounds = playerSession.scores.length;
 
-                final inheritedColor = playerSession.playerColorValue ?? _game?.colorValue;
-                final Color highlightColor = inheritedColor != null ? Color(inheritedColor) : AppTheme.palette.first;
-
-                return StylizedCard(
-                  shadowColor: highlightColor,
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: rank == 1
-                              ? AppTheme.highestWins
-                              : AppTheme.lowestWins,
-                          child: Text(
-                            '#$rank',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: rank == 1
-                                  ? AppTheme.highestWinsForeground
-                                  : AppTheme.lowestWinsForeground,
-                            ),
+              final inheritedColor = playerSession.playerColorValue ?? _game?.colorValue;
+              final Color highlightColor = inheritedColor != null ? Color(inheritedColor) : AppTheme.palette.first;
+              
+              return StylizedCard(
+                shadowColor: highlightColor,
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      leading: Container(
+                        width: 90,
+                        height: 60,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: highlightColor, // Replace with your desired border color
+                            width: 1.5,                           // Border thickness
                           ),
                         ),
-                        title: Text(
-                          playerName,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          '${AppLocalizations.of(context)!.score}: $totalScore',
-                          style: const TextStyle(color: AppTheme.mutedForeground),
-                        ),
-                        onTap: () {
-                          _showScoreEntryFormBottomSheet(
-                            playerSession,
-                            trueIndexInDatabase,
-                          );
-                        },
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(
-                                Icons.edit_outlined,
-                                color: highlightColor,
-                              ),
-                              tooltip: AppLocalizations.of(context)!.editPlayer,
-                              onPressed: () {
-                                _showPlayerFormBottomSheet(
-                                  playerIndexInDatabase: trueIndexInDatabase,
-                                );
-                              },
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                Icons.history,
-                                color: highlightColor,
-                              ),
-                              tooltip: AppLocalizations.of(context)!.viewScoreHistory,
-                              onPressed: () {
-                                _showPlayerHistorySheet(
-                                  playerSession,
-                                  trueIndexInDatabase,
-                                );
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.delete_outline,
-                                color: AppTheme.destructive,
-                              ),
-                              tooltip: AppLocalizations.of(context)!.removePlayer,
-                              onPressed: () {
-                                _showDeleteConfirmationDialog(
-                                  trueIndexInDatabase,
-                                  playerName,
-                                );
-                              },
-                            ),
-                          ],
+                        child: Text(
+                          '${playerSession.totalScore}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: highlightColor,
+                            fontSize: 20,
+                          ),
                         ),
                       ),
-                      
-                      const SizedBox(height: 4),
-
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 10.0,
-                        ),
+                      title: Row(
+                        spacing: 8.0,
+                        children: [
+                          Text(
+                            playerName,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          
+                          if (isWinner)
+                            const Icon(
+                              Icons.star,
+                              color: Colors.amber,
+                              size: 18,
+                            ),
+                        ],
+                      ),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
                         child: Row(
                           children: [
-                            // FIX: Swapped calendar icon for a round/layers icon to match the text context
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                               decoration: BoxDecoration(
@@ -991,19 +938,65 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
                                   ),
                                 ],
                               ),
-                            )
+                            ),
                           ],
-                        ),
+                        )
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
-      floatingActionButtonLocation: const CustomFabLocation(
-        offsetY: 80.0, 
-        offsetX: 6.0,
-      ),
+                      onTap: () {
+                        _showScoreEntryFormBottomSheet(
+                          playerSession,
+                          trueIndexInDatabase,
+                        );
+                      },
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              Icons.edit_outlined,
+                              color: highlightColor,
+                            ),
+                            tooltip: AppLocalizations.of(context)!.editPlayer,
+                            onPressed: () {
+                              _showPlayerFormBottomSheet(
+                                playerIndexInDatabase: trueIndexInDatabase,
+                              );
+                            },
+                          ),
+                          IconButton(
+                            icon: Icon(
+                              Icons.history,
+                              color: highlightColor,
+                            ),
+                            tooltip: AppLocalizations.of(context)!.viewScoreHistory,
+                            onPressed: () {
+                              _showPlayerHistorySheet(
+                                playerSession,
+                                trueIndexInDatabase,
+                              );
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: AppTheme.destructive,
+                            ),
+                            tooltip: AppLocalizations.of(context)!.removePlayer,
+                            onPressed: () {
+                              _showDeleteConfirmationDialog(
+                                trueIndexInDatabase,
+                                playerName,
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
       floatingActionButton: FloatingActionButton(
         onPressed:
             _showPlayerFormBottomSheet, // Floating Action Button now strictly registers new names

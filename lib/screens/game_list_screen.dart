@@ -4,11 +4,10 @@ import '../main.dart';
 import '../models/board_game.dart';
 import '../models/app_theme.dart';
 import '../components/stylized_card.dart';
-import '../helpers/custom_fab_location.dart';
 import 'package:go_router/go_router.dart';
 import '../l10n/app_localizations.dart';
 import '../components/color_picker_field.dart';
-
+import '../components/custom_app_bar.dart';
 
 class GameListScreen extends StatefulWidget {
   const GameListScreen({super.key});
@@ -84,17 +83,15 @@ class _GameListScreenState extends State<GameListScreen> {
 
   void _showGameDialog({BoardGame? existingGame}) {
     final nameController = TextEditingController();
-    final descController = TextEditingController();
     bool highestWins = true;
-    Color _currentColor = AppTheme.palette.first;
+    Color currentColor = AppTheme.palette.first;
 
     // If we are editing, pre-fill the form fields with the current values
     final isEditing = existingGame != null;
     if (isEditing) {
       nameController.text = existingGame.name;
-      descController.text = existingGame.description ?? '';
       highestWins = existingGame.highestScoreWins;
-      _currentColor = existingGame.colorValue != null ? Color(existingGame.colorValue!) : _currentColor;
+      currentColor = existingGame.colorValue != null ? Color(existingGame.colorValue!) : currentColor;
     }
 
     showModalBottomSheet(
@@ -143,21 +140,10 @@ class _GameListScreenState extends State<GameListScreen> {
                   const SizedBox(height: 10),
 
                   ColorPickerField(
-                    initialColor: _currentColor,
+                    initialColor: currentColor,
                     onColorSelected: (newColor) {
-                      _currentColor = newColor; 
+                      currentColor = newColor; 
                     },
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  TextField(
-                    controller: descController,
-                    textCapitalization: TextCapitalization.sentences,
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.gameDescriptionLabel,
-                      hintText: AppLocalizations.of(context)!.gameDescriptionHint,
-                    ),
                   ),
 
                   const SizedBox(height: 15),
@@ -288,12 +274,8 @@ class _GameListScreenState extends State<GameListScreen> {
                               : BoardGame();
 
                           gameToSave.name = nameController.text.trim();
-                          gameToSave.description =
-                              descController.text.trim().isEmpty
-                              ? null
-                              : descController.text.trim();
                           gameToSave.highestScoreWins = highestWins;
-                          gameToSave.colorValue = _currentColor.toARGB32();
+                          gameToSave.colorValue = currentColor.toARGB32();
 
                           await isar.writeTxn(() async {
                             await isar.boardGames.put(gameToSave);
@@ -321,7 +303,7 @@ class _GameListScreenState extends State<GameListScreen> {
     );
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: CustomAppBar(
         title: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -342,70 +324,56 @@ class _GameListScreenState extends State<GameListScreen> {
         ),
       ),
       body: sortedGames.isEmpty
-          ? Center(child: Text(AppLocalizations.of(context)!.noGamesYet))
-          : ListView.builder(
-              itemCount: sortedGames.length,
-              itemBuilder: (context, index) {
-                final BoardGame game = sortedGames[index];
-                final Color highlightColor = game.colorValue != null ? Color(game.colorValue!) : AppTheme.palette.first;
+        ? Center(child: Text(AppLocalizations.of(context)!.noGamesYet))
+        : ListView.builder(
+            itemCount: sortedGames.length,
+            itemBuilder: (context, index) {
+              final BoardGame game = sortedGames[index];
+              final Color highlightColor = game.colorValue != null ? Color(game.colorValue!) : AppTheme.palette.first;
 
-                return StylizedCard(
-                  shadowColor: highlightColor,
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ListTile(
-                        title: Text(
-                          game.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          game.description ?? AppLocalizations.of(context)!.notAvailable,
-                          style: const TextStyle(color: AppTheme.mutedForeground),
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(
-                                Icons.edit_outlined,
-                                color: highlightColor,
-                              ),
-                              tooltip: AppLocalizations.of(context)!.editGame,
-                              onPressed: () {
-                                _showGameDialog(existingGame: game);
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.delete_outline,
-                                color: AppTheme.destructive,
-                              ),
-                              tooltip: AppLocalizations.of(context)!.deleteGame,
-                              onPressed: () {
-                                _showDeleteConfirmationDialog(game);
-                              },
-                            ),
-                          ],
-                        ),
-                        onTap: () {
-                          context.go('/home/${game.id}/sessions');
-                        },
+              return StylizedCard(
+                shadowColor: highlightColor,
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      title: Text(
+                        game.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
-
-                      const SizedBox(height: 4),
-
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 10.0,
-                        ),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
                         child: Row(
                           children: [
+                            Tooltip(
+                              message: game.highestScoreWins 
+                                  ? AppLocalizations.of(context)!.highestScoretWins 
+                                  : AppLocalizations.of(context)!.lowestScoretWins,
+                              triggerMode: TooltipTriggerMode.tap, 
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: game.highestScoreWins
+                                      ? AppTheme.highestWins
+                                      : AppTheme.lowestWins,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  game.highestScoreWins 
+                                      ? Icons.trending_up_rounded 
+                                      : Icons.trending_down_rounded,
+                                  size: 16,
+                                  color: game.highestScoreWins
+                                      ? AppTheme.highestWinsForeground
+                                      : AppTheme.lowestWinsForeground,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
@@ -437,60 +405,46 @@ class _GameListScreenState extends State<GameListScreen> {
                                 ),
                               ),
                             ),
-
-                            const SizedBox(width: 8),
-
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                // Evaluates your custom win condition themes built earlier
-                                color: game.highestScoreWins
-                                    ? AppTheme.highestWins
-                                    : AppTheme.lowestWins,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min, // Prevents chip from stretching full-width
-                                children: [
-                                  Icon(
-                                    // Dynamic icons mapping to the ruleset structure
-                                    game.highestScoreWins 
-                                        ? Icons.trending_up_rounded 
-                                        : Icons.trending_down_rounded,
-                                    size: 14,
-                                    color: game.highestScoreWins
-                                        ? AppTheme.highestWinsForeground
-                                        : AppTheme.lowestWinsForeground,
-                                  ),
-                                  const SizedBox(width: 6), // Crisp spacing between icon and labels
-                                  Text(
-                                    game.highestScoreWins ? AppLocalizations.of(context)!.highestScoretWins : AppLocalizations.of(context)!.lowestScoretWins,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                      color: game.highestScoreWins
-                                          ? AppTheme.highestWinsForeground
-                                          : AppTheme.lowestWinsForeground,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
-      floatingActionButtonLocation: const CustomFabLocation(
-        offsetY: 80.0, 
-        offsetX: 6.0,
-      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              Icons.edit_outlined,
+                              color: highlightColor,
+                            ),
+                            tooltip: AppLocalizations.of(context)!.editGame,
+                            onPressed: () {
+                              _showGameDialog(existingGame: game);
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: AppTheme.destructive,
+                            ),
+                            tooltip: AppLocalizations.of(context)!.deleteGame,
+                            onPressed: () {
+                              _showDeleteConfirmationDialog(game);
+                            },
+                          ),
+                        ],
+                      ),
+                      onTap: () {
+                        context.go('/home/${game.id}/sessions');
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
       floatingActionButton: FloatingActionButton(
         onPressed: () =>
-            _showGameDialog(), // Calls dialog without arguments (Defaults to Add Mode)
+            _showGameDialog(),
         child: const Icon(Icons.add),
       ),
     );
