@@ -3,7 +3,6 @@ import '../main.dart';
 import '../models/board_game.dart';
 import '../models/app_theme.dart';
 import '../l10n/app_localizations.dart';
-import '../widgets/color_picker_field.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/player_card.dart';
 import '../widgets/player_score_history.dart';
