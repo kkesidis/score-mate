@@ -7,6 +7,7 @@ import '../l10n/app_localizations.dart';
 import '../widgets/color_picker_field.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/player_card.dart';
+import '../widgets/player_score_history.dart';
 
 enum ScoreOp { add, subtract }
 
@@ -559,120 +560,24 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
             // Re-fetch the fresh live player instance from our synced state
             final currentMatch = _game!.sessions[widget.sessionIndex];
             final livePlayer = currentMatch.players[playerIndexInDatabase];
-            final scores = livePlayer.scores;
 
-            return Padding(
-              padding: EdgeInsets.only(
-                top: 16.0,
-                left: 16.0,
-                right: 16.0,
-                bottom:
-                    MediaQuery.of(context).viewInsets.bottom +
-                    16.0, // Keyboard safety
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.scoreHistory(livePlayer.playerName ?? AppLocalizations.of(context)!.genericPlayerName),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  scores.isEmpty
-                      ? Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          child: Center(
-                            child: Text(AppLocalizations.of(context)!.noScoresYet),
-                          ),
-                        )
-                      : Flexible(
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: scores.length,
-                            itemBuilder: (context, index) {
-                              final reversedIndex = scores.length - 1 - index;
-                              final entry = scores[reversedIndex];
-
-                              final valueString = (entry.value ?? 0) >= 0
-                                  ? '+${entry.value}'
-                                  : '${entry.value}';
-
-                              return ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: (entry.value ?? 0) >= 0
-                                      ? AppTheme.secondary
-                                      : AppTheme.destructive,
-                                  child: Text(
-                                    '#${reversedIndex + 1}',
-                                    style: TextStyle(
-                                      color: (entry.value ?? 0) >= 0
-                                        ? AppTheme.secondaryForeground
-                                        : AppTheme.destructiveForeground,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                title: Text(
-                                  '$valueString ${AppLocalizations.of(context)!.points}',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  entry.description ?? AppLocalizations.of(context)!.notAvailable,
-                                  style: const TextStyle(
-                                    color: AppTheme.mutedForeground
-                                  )
-                                ),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    // EDIT ENTRY BUTTON
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.edit_outlined,
-                                        color: AppTheme.primary,
-                                        size: 20,
-                                      ),
-                                      onPressed: () {
-                                        _showScoreEntryFormBottomSheet(
-                                          livePlayer, // 1. Required positional player data object
-                                          playerIndexInDatabase, // 2. Required positional target database index slot
-                                          scoreIndex:
-                                              reversedIndex, // Named parameter identifying which entry is targeted
-                                          setSheetState:
-                                              setSheetState, // Named parameter callback to force live data rebuilds below
-                                        );
-                                      },
-                                    ),
-                                    // DELETE ENTRY BUTTON
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.delete_outline,
-                                        color: AppTheme.destructive,
-                                        size: 20,
-                                      ),
-                                      onPressed: () {
-                                        _deleteSingleScoreEntry(
-                                          playerIndexInDatabase,
-                                          reversedIndex,
-                                          setSheetState,
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                  const SizedBox(height: 10),
-                ],
-              ),
+            return PlayerScoreHistory(
+              player: livePlayer,
+              onEdit: (index) {
+                _showScoreEntryFormBottomSheet(
+                  livePlayer, // 1. Required positional player data object
+                  playerIndexInDatabase, // 2. Required positional target database index slot
+                  scoreIndex: index, // Named parameter identifying which entry is targeted
+                  setSheetState: setSheetState, // Named parameter callback to force live data rebuilds below
+                );
+              },
+              onDelete: (index) {
+                _deleteSingleScoreEntry(
+                  playerIndexInDatabase,
+                  index,
+                  setSheetState,
+                );
+              }
             );
           },
         );
