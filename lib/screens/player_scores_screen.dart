@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 import '../models/board_game.dart';
 import '../models/app_theme.dart';
-import '../widgets/stylized_card.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/color_picker_field.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/player_card.dart';
 import '../widgets/player_score_history.dart';
+import '../widgets/player_form.dart';
 
 enum ScoreOp { add, subtract }
 
@@ -51,19 +51,13 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
   }
 
   void _showPlayerFormBottomSheet({int? playerIndexInDatabase}) {
-    final nameController = TextEditingController();
-    final bool isEditing = playerIndexInDatabase != null;
-    Color currentColor = AppTheme.palette.first;
+    if (_game == null) return;
 
-    // 1. SETUP WORKFLOW MODE CONDITIONS
-    if (isEditing) {
-      if (_game == null) return;
+    PlayerSession? existingPlayer;
+
+    if (playerIndexInDatabase != null) {
       final currentMatchSession = _game!.sessions[widget.sessionIndex];
-      final targetPlayer = currentMatchSession.players[playerIndexInDatabase];
-      nameController.text = targetPlayer.playerName ?? AppLocalizations.of(context)!.genericPlayerName;
-
-      final inheritedColor = targetPlayer.playerColorValue ?? _game?.colorValue;
-      currentColor = inheritedColor != null ? Color(inheritedColor) : currentColor;
+      existingPlayer = currentMatchSession.players[playerIndexInDatabase];
     }
 
     showModalBottomSheet(
@@ -76,110 +70,31 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                top: 24.0,
-                left: 16.0,
-                right: 16.0,
-                bottom:
-                    MediaQuery.of(context).viewInsets.bottom +
-                    24.0, // Keyboard safety
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment:
-                    CrossAxisAlignment.stretch, // Stretches elements uniformly
-                children: [
-                  Text(
-                    isEditing ? AppLocalizations.of(context)!.renamePlayer : AppLocalizations.of(context)!.addPlayer,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
+            return PlayerForm(
+              game: _game!,
+              existingPlayer: existingPlayer,
+              onSubmit: (playerToSave) async {
+                final sessionsList = _game!.sessions.toList();
+                final currentMatchSession = sessionsList[widget.sessionIndex];
+                final playersList = (currentMatchSession.players).toList();
 
-                  TextField(
-                    controller: nameController,
-                    autofocus: true,
-                    textCapitalization: TextCapitalization.sentences,
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.playerNameLabel,
-                      hintText: AppLocalizations.of(context)!.playerNameHint,
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
+                if (playerIndexInDatabase != null) {
+                  playersList[playerIndexInDatabase] = playerToSave;
+                } else {
+                  playersList.add(playerToSave);
+                }
 
-                  const SizedBox(height: 10),
+                currentMatchSession.players = playersList;
+                sessionsList[widget.sessionIndex] =
+                    currentMatchSession;
+                _game!.sessions = sessionsList;
 
-                  ColorPickerField(
-                    initialColor: currentColor,
-                    onColorSelected: (newColor) {
-                      currentColor = newColor; 
-                    },
-                  ),
+                await isar.writeTxn(() async {
+                  await isar.boardGames.put(_game!);
+                });
 
-                  const SizedBox(height: 24),
-
-                  OverflowBar(
-                    alignment: MainAxisAlignment.end,
-                    spacing: 8.0,
-                    overflowSpacing: 8.0,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(AppLocalizations.of(context)!.cancel),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primary,
-                          foregroundColor: AppTheme.primaryForeground,
-                        ),
-                        onPressed: () async {
-                          final textInput = nameController.text.trim();
-                          if (_game == null || textInput.isEmpty) return;
-
-                          final sessionsList = _game!.sessions.toList();
-                          final currentMatchSession =
-                              sessionsList[widget.sessionIndex];
-                          final playersList =
-                              (currentMatchSession.players ?? <PlayerSession>[])
-                                  .toList();
-
-                          if (isEditing) {
-                            // 2A. MUTATE THE EXISTING SLOT
-                            final targetPlayer =
-                                playersList[playerIndexInDatabase];
-                            targetPlayer.playerName = textInput;
-                            targetPlayer.playerColorValue = currentColor.toARGB32();
-                            playersList[playerIndexInDatabase] = targetPlayer;
-                          } else {
-                            // 2B. APPEND A NEW PLAYER PROFILE
-                            final newPlayerSession = PlayerSession()
-                              ..playerName = textInput
-                               ..playerColorValue = currentColor.toARGB32()
-                              ..scores = [];
-                            playersList.add(newPlayerSession);
-                          }
-
-                          currentMatchSession.players = playersList;
-                          sessionsList[widget.sessionIndex] =
-                              currentMatchSession;
-                          _game!.sessions = sessionsList;
-
-                          await isar.writeTxn(() async {
-                            await isar.boardGames.put(_game!);
-                          });
-
-                          if (context.mounted) Navigator.pop(context);
-                        },
-                        child: Text(isEditing ? AppLocalizations.of(context)!.save : AppLocalizations.of(context)!.add),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                if (context.mounted) Navigator.pop(context);
+              },
             );
           },
         );
