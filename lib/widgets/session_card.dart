@@ -71,7 +71,7 @@ class SessionCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     final highlightColor = game.colorValue != null ? Color(game.colorValue!) : AppTheme.palette.first;
-    final sessionName = session.name ?? l10n.indexedSession(sessionIndex + 1);
+    final sessionName = session.name?.isEmpty ?? true ? l10n.indexedSession(sessionIndex + 1) : session.name!;
     final sessionPlayers = session.players;
     final sessionDate = session.dateTime != null
       ? '${session.dateTime!.day}/${session.dateTime!.month}/${session.dateTime!.year}'

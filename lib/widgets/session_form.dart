@@ -112,7 +112,7 @@ class _SessionFormState extends State<SessionForm> {
                   }
 
                   final newSession = MatchSession()
-                    ..name = textInput.isEmpty ? l10n.indexedSession(nextIndex) : textInput
+                    ..name = textInput 
                     ..dateTime = DateTime.now();
 
                   widget.onAdd(newSession);
