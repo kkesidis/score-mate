@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter/scheduler.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
 import '../widgets/custom_app_bar.dart';
@@ -77,8 +79,12 @@ class _LanguageScreenState extends State<LanguageScreen> {
                                 : null,
                             onTap: () async {
                               await changeLanguage(targetLocaleCode);
-
-                              if (context.mounted) Navigator.pop(context);
+                              
+                              SchedulerBinding.instance.addPostFrameCallback((_) {
+                                if (context.mounted) {
+                                  context.go('/home');
+                                }
+                              });
                             },
                           );
                         },
