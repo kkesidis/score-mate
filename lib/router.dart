@@ -3,7 +3,7 @@ import 'package:score_den/screens/language_screen.dart';
 import 'screens/game_list_screen.dart';
 import 'screens/match_sessions_screen.dart';
 import 'screens/player_scores_screen.dart';
-import 'components/navigation_bar.dart';
+import 'widgets/navigation_bar.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/home',

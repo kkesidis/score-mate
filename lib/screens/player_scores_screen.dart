@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 import '../models/board_game.dart';
 import '../models/app_theme.dart';
-import '../components/stylized_card.dart';
+import '../widgets/stylized_card.dart';
 import '../l10n/app_localizations.dart';
-import '../components/color_picker_field.dart';
-import '../components/custom_app_bar.dart';
+import '../widgets/color_picker_field.dart';
+import '../widgets/custom_app_bar.dart';
 
 enum ScoreOp { add, subtract }
 
