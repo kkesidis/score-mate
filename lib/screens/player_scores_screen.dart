@@ -8,8 +8,7 @@ import '../widgets/custom_app_bar.dart';
 import '../widgets/player_card.dart';
 import '../widgets/player_score_history.dart';
 import '../widgets/player_form.dart';
-
-enum ScoreOp { add, subtract }
+import '../widgets/score_form.dart';
 
 class PlayerScoresScreen extends StatefulWidget {
   final int gameId;
@@ -108,30 +107,9 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
     int? scoreIndex, // Optional named param for editing
     StateSetter? setSheetState, // Optional named param for history panels
   }) {
-    final bool isEditing = scoreIndex != null;
-    final ScoreEntry? existingEntry = isEditing
-        ? player.scores[scoreIndex]
-        : null;
-
-    // Calculate base score excluding the entry being updated (if editing)
-    int currentScore = 0;
-    for (int i = 0; i < player.scores.length; i++) {
-      if (isEditing && i == scoreIndex) continue;
-      currentScore += player.scores[i].value ?? 0;
-    }
-
-    final scoreController = TextEditingController();
-    final descController = TextEditingController(
-      text: existingEntry?.description ?? '',
-    );
-
-    ScoreOp currentOp = ScoreOp.add;
-
-    if (isEditing && existingEntry != null) {
-      final int entryValue = existingEntry.value ?? 0;
-      currentOp = entryValue < 0 ? ScoreOp.subtract : ScoreOp.add;
-      scoreController.text = entryValue.abs().toString();
-    }
+    final ScoreEntry? existingEntry = scoreIndex != null
+      ? player.scores[scoreIndex]
+      : null;
 
     showModalBottomSheet(
       context: context,
@@ -143,257 +121,49 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       builder: (context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setModalState) {
-            // Re-render header calculations dynamically as text is typed
-            scoreController.addListener(() {
-              if (context.mounted) setModalState(() {});
-            });
+            return ScoreForm(
+              game: _game!,
+              player: player,
+              score: existingEntry,
+              onSubmit: (scoreToSave) async {
+                if (_game == null) {
+                  return;
+                }
 
-            final rawValue = int.tryParse(scoreController.text.trim()) ?? 0;
-            final parsedValue = rawValue.abs();
+                final sessionsList = _game!.sessions.toList();
+                final currentMatchSession = sessionsList[widget.sessionIndex];
+                final playersList = currentMatchSession.players.toList();
+                final targetPlayer = playersList[playerIndexInDatabase];
+                final updatedScores = targetPlayer.scores.toList();
 
-            final finalValueModifier = currentOp == ScoreOp.add
-                ? parsedValue
-                : -parsedValue;
-            final newScore = currentScore + finalValueModifier;
+                if (scoreIndex != null) {
+                  updatedScores[scoreIndex] = scoreToSave;
+                } else {
+                  updatedScores.add(scoreToSave);
+                }
 
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 20.0,
-                right: 20.0,
-                top: 24.0,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24.0,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // 1. TITLE & CALCULATION HEADER
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isEditing
-                            ? AppLocalizations.of(context)!.editScore(player.playerName ?? AppLocalizations.of(context)!.genericPlayerName)
-                            : (player.playerName ?? AppLocalizations.of(context)!.genericPlayerName),
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${AppLocalizations.of(context)!.scoreChange}: $currentScore → $newScore',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.54),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
+                targetPlayer.scores = updatedScores;
+                playersList[playerIndexInDatabase] = targetPlayer;
 
-                  // 2. THE OPERATION CONTROLLER (ADD / SUBTRACT)
-                  SegmentedButton<ScoreOp>(
-                    segments: <ButtonSegment<ScoreOp>>[
-                      ButtonSegment<ScoreOp>(
-                        value: ScoreOp.add,
-                        label: Text(AppLocalizations.of(context)!.add),
-                        icon: const Icon(Icons.add),
-                      ),
-                      ButtonSegment<ScoreOp>(
-                        value: ScoreOp.subtract,
-                        label: Text(AppLocalizations.of(context)!.subtract),
-                        icon: const Icon(Icons.remove),
-                      ),
-                    ],
-                    selected: <ScoreOp>{currentOp},
-                    onSelectionChanged: (Set<ScoreOp> newSelection) {
-                      setModalState(() {
-                        currentOp = newSelection.first;
-                      });
-                    },
-                  ),
+                currentMatchSession.players = playersList;
+                sessionsList[widget.sessionIndex] =
+                    currentMatchSession;
+                _game!.sessions = sessionsList;
 
-                  const SizedBox(height: 20),
+                await isar.writeTxn(() async {
+                  await isar.boardGames.put(_game!);
+                });
 
-                  // 3. MAIN INPUT FIELD
-                  TextField(
-                    controller: scoreController,
-                    autofocus: true,
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.pointsLabel,
-                      hintText: AppLocalizations.of(context)!.pointsHint,
-                      prefixIcon: Icon(
-                        currentOp == ScoreOp.add ? Icons.add : Icons.remove,
-                        color: currentOp == ScoreOp.add
-                            ? AppTheme.accent
-                            : AppTheme.destructive,
-                      ),
-                    ),
-                    keyboardType: TextInputType.number,
-                  ),
-                  const SizedBox(height: 16),
+                // Fire localized view updates back up to the calling history panel
+                if (setSheetState != null) {
+                  setSheetState(() {});
+                }
 
-                  TextField(
-                    controller: descController,
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.pointDescriptionLabel,
-                      hintText: AppLocalizations.of(context)!.pointDescriptionHint,
-                      prefixIcon: const Icon(Icons.notes_outlined),
-                    ),
-                    textCapitalization: TextCapitalization.sentences,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // 4. QUICK SELECT CHIPS
-                  Text(
-                    AppLocalizations.of(context)!.quickSelect,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.4),
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [5, 10, 15, 20].map((int value) {
-                      return Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: _buildEqualWidthChip(
-                            value,
-                            currentOp,
-                            scoreController,
-                            setModalState,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // 5. ACTION BUTTON CONTROLS FOOTER
-                  OverflowBar(
-                    alignment: MainAxisAlignment.end,
-                    spacing: 8.0,
-                    overflowSpacing: 8.0,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(AppLocalizations.of(context)!.cancel),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primary,
-                          foregroundColor: AppTheme.primaryForeground,
-                        ),
-                        onPressed: () async {
-                          if (_game == null ||
-                              scoreController.text.trim().isEmpty) {
-                            return;
-                          }
-
-                          final sessionsList = _game!.sessions.toList();
-                          final currentMatchSession =
-                              sessionsList[widget.sessionIndex];
-                          final playersList =
-                              (currentMatchSession.players ?? <PlayerSession>[])
-                                  .toList();
-
-                          // Instantiate updated score details
-                          final targetScoreEntry = ScoreEntry()
-                            ..value = finalValueModifier
-                            ..description = descController.text.trim().isEmpty
-                                ? null
-                                : descController.text.trim();
-
-                          final targetPlayer =
-                              playersList[playerIndexInDatabase];
-                          final updatedScores = targetPlayer.scores.toList();
-
-                          if (isEditing) {
-                            // Mutate the existing element at its index placement
-                            updatedScores[scoreIndex] = targetScoreEntry;
-                          } else {
-                            // Append directly to history
-                            updatedScores.add(targetScoreEntry);
-                          }
-
-                          targetPlayer.scores = updatedScores;
-                          playersList[playerIndexInDatabase] = targetPlayer;
-
-                          currentMatchSession.players = playersList;
-                          sessionsList[widget.sessionIndex] =
-                              currentMatchSession;
-                          _game!.sessions = sessionsList;
-
-                          await isar.writeTxn(() async {
-                            await isar.boardGames.put(_game!);
-                          });
-
-                          // Fire localized view updates back up to the calling history panel
-                          if (setSheetState != null) {
-                            setSheetState(() {});
-                          }
-
-                          if (context.mounted) Navigator.pop(context);
-                        },
-                        child: Text(isEditing ? AppLocalizations.of(context)!.save : AppLocalizations.of(context)!.logScore),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                if (context.mounted) Navigator.pop(context);
+              }
             );
           },
         );
-      },
-    );
-  }
-
-  Widget _buildEqualWidthChip(
-    int value,
-    ScoreOp currentOp,
-    TextEditingController scoreController,
-    StateSetter setModalState,
-  ) {
-    final String prefix = currentOp == ScoreOp.add ? '+' : '-';
-    final isAdd = currentOp == ScoreOp.add;
-
-    return ActionChip(
-      // Enforces centered alignment inside the expanded boundaries
-      label: Center(
-        child: Text(
-          '$prefix$value',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            // Switches typography colors depending on the operational math state
-            color: isAdd 
-                ? AppTheme.secondaryForeground 
-                : AppTheme.destructiveForeground,
-          ),
-        ),
-      ),
-      // Solid structural background injection based on the operation type
-      backgroundColor: isAdd 
-          ? AppTheme.secondary 
-          : AppTheme.destructive,
-      // We completely strip the border side tinting line since we are using solid fills
-      side: BorderSide.none, 
-      onPressed: () {
-        setModalState(() {
-          scoreController.text = value.toString();
-          scoreController.selection = TextSelection.fromPosition(
-            TextPosition(offset: scoreController.text.length),
-          );
-        });
       },
     );
   }
