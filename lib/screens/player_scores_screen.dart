@@ -693,6 +693,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
     final currentMatchSession = _game!.sessions[widget.sessionIndex];
     final basePlayers = currentMatchSession.players ?? <PlayerSession>[];
+    final sessionName = currentMatchSession.name?.isEmpty ?? true ? AppLocalizations.of(context)!.indexedSession(widget.sessionIndex + 1) : currentMatchSession.name!;
     int? topPlayerIndex;
 
     final List<MapEntry<int, PlayerSession>> indexedPlayers = basePlayers
@@ -714,7 +715,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(currentMatchSession.name ?? AppLocalizations.of(context)!.sessionScores),
+            Text(sessionName),
             const SizedBox(height: 2), // Tiny spacer between lines
             Text(
               _game?.name ?? AppLocalizations.of(context)!.boardGame,
