@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 import '../models/board_game.dart';
 import '../models/app_theme.dart';
-import '../components/stylized_card.dart';
 import '../l10n/app_localizations.dart';
-import '../components/color_picker_field.dart';
-import '../components/custom_app_bar.dart';
-
-enum ScoreOp { add, subtract }
+import '../widgets/custom_app_bar.dart';
+import '../widgets/player_card.dart';
+import '../widgets/player_score_history.dart';
+import '../widgets/player_form.dart';
+import '../widgets/score_form.dart';
 
 class PlayerScoresScreen extends StatefulWidget {
   final int gameId;
@@ -49,19 +49,13 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
   }
 
   void _showPlayerFormBottomSheet({int? playerIndexInDatabase}) {
-    final nameController = TextEditingController();
-    final bool isEditing = playerIndexInDatabase != null;
-    Color currentColor = AppTheme.palette.first;
+    if (_game == null) return;
 
-    // 1. SETUP WORKFLOW MODE CONDITIONS
-    if (isEditing) {
-      if (_game == null) return;
+    PlayerSession? existingPlayer;
+
+    if (playerIndexInDatabase != null) {
       final currentMatchSession = _game!.sessions[widget.sessionIndex];
-      final targetPlayer = currentMatchSession.players[playerIndexInDatabase];
-      nameController.text = targetPlayer.playerName ?? AppLocalizations.of(context)!.genericPlayerName;
-
-      final inheritedColor = targetPlayer.playerColorValue ?? _game?.colorValue;
-      currentColor = inheritedColor != null ? Color(inheritedColor) : currentColor;
+      existingPlayer = currentMatchSession.players[playerIndexInDatabase];
     }
 
     showModalBottomSheet(
@@ -74,110 +68,31 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                top: 24.0,
-                left: 16.0,
-                right: 16.0,
-                bottom:
-                    MediaQuery.of(context).viewInsets.bottom +
-                    24.0, // Keyboard safety
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment:
-                    CrossAxisAlignment.stretch, // Stretches elements uniformly
-                children: [
-                  Text(
-                    isEditing ? AppLocalizations.of(context)!.renamePlayer : AppLocalizations.of(context)!.addPlayer,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
+            return PlayerForm(
+              game: _game!,
+              existingPlayer: existingPlayer,
+              onSubmit: (playerToSave) async {
+                final sessionsList = _game!.sessions.toList();
+                final currentMatchSession = sessionsList[widget.sessionIndex];
+                final playersList = (currentMatchSession.players).toList();
 
-                  TextField(
-                    controller: nameController,
-                    autofocus: true,
-                    textCapitalization: TextCapitalization.sentences,
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.playerNameLabel,
-                      hintText: AppLocalizations.of(context)!.playerNameHint,
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
+                if (playerIndexInDatabase != null) {
+                  playersList[playerIndexInDatabase] = playerToSave;
+                } else {
+                  playersList.add(playerToSave);
+                }
 
-                  const SizedBox(height: 10),
+                currentMatchSession.players = playersList;
+                sessionsList[widget.sessionIndex] =
+                    currentMatchSession;
+                _game!.sessions = sessionsList;
 
-                  ColorPickerField(
-                    initialColor: currentColor,
-                    onColorSelected: (newColor) {
-                      currentColor = newColor; 
-                    },
-                  ),
+                await isar.writeTxn(() async {
+                  await isar.boardGames.put(_game!);
+                });
 
-                  const SizedBox(height: 24),
-
-                  OverflowBar(
-                    alignment: MainAxisAlignment.end,
-                    spacing: 8.0,
-                    overflowSpacing: 8.0,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(AppLocalizations.of(context)!.cancel),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primary,
-                          foregroundColor: AppTheme.primaryForeground,
-                        ),
-                        onPressed: () async {
-                          final textInput = nameController.text.trim();
-                          if (_game == null || textInput.isEmpty) return;
-
-                          final sessionsList = _game!.sessions.toList();
-                          final currentMatchSession =
-                              sessionsList[widget.sessionIndex];
-                          final playersList =
-                              (currentMatchSession.players ?? <PlayerSession>[])
-                                  .toList();
-
-                          if (isEditing) {
-                            // 2A. MUTATE THE EXISTING SLOT
-                            final targetPlayer =
-                                playersList[playerIndexInDatabase];
-                            targetPlayer.playerName = textInput;
-                            targetPlayer.playerColorValue = currentColor.toARGB32();
-                            playersList[playerIndexInDatabase] = targetPlayer;
-                          } else {
-                            // 2B. APPEND A NEW PLAYER PROFILE
-                            final newPlayerSession = PlayerSession()
-                              ..playerName = textInput
-                               ..playerColorValue = currentColor.toARGB32()
-                              ..scores = [];
-                            playersList.add(newPlayerSession);
-                          }
-
-                          currentMatchSession.players = playersList;
-                          sessionsList[widget.sessionIndex] =
-                              currentMatchSession;
-                          _game!.sessions = sessionsList;
-
-                          await isar.writeTxn(() async {
-                            await isar.boardGames.put(_game!);
-                          });
-
-                          if (context.mounted) Navigator.pop(context);
-                        },
-                        child: Text(isEditing ? AppLocalizations.of(context)!.save : AppLocalizations.of(context)!.add),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                if (context.mounted) Navigator.pop(context);
+              },
             );
           },
         );
@@ -191,30 +106,9 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
     int? scoreIndex, // Optional named param for editing
     StateSetter? setSheetState, // Optional named param for history panels
   }) {
-    final bool isEditing = scoreIndex != null;
-    final ScoreEntry? existingEntry = isEditing
-        ? player.scores[scoreIndex]
-        : null;
-
-    // Calculate base score excluding the entry being updated (if editing)
-    int currentScore = 0;
-    for (int i = 0; i < player.scores.length; i++) {
-      if (isEditing && i == scoreIndex) continue;
-      currentScore += player.scores[i].value ?? 0;
-    }
-
-    final scoreController = TextEditingController();
-    final descController = TextEditingController(
-      text: existingEntry?.description ?? '',
-    );
-
-    ScoreOp currentOp = ScoreOp.add;
-
-    if (isEditing && existingEntry != null) {
-      final int entryValue = existingEntry.value ?? 0;
-      currentOp = entryValue < 0 ? ScoreOp.subtract : ScoreOp.add;
-      scoreController.text = entryValue.abs().toString();
-    }
+    final ScoreEntry? existingEntry = scoreIndex != null
+      ? player.scores[scoreIndex]
+      : null;
 
     showModalBottomSheet(
       context: context,
@@ -226,257 +120,49 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       builder: (context) {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setModalState) {
-            // Re-render header calculations dynamically as text is typed
-            scoreController.addListener(() {
-              if (context.mounted) setModalState(() {});
-            });
+            return ScoreForm(
+              game: _game!,
+              player: player,
+              score: existingEntry,
+              onSubmit: (scoreToSave) async {
+                if (_game == null) {
+                  return;
+                }
 
-            final rawValue = int.tryParse(scoreController.text.trim()) ?? 0;
-            final parsedValue = rawValue.abs();
+                final sessionsList = _game!.sessions.toList();
+                final currentMatchSession = sessionsList[widget.sessionIndex];
+                final playersList = currentMatchSession.players.toList();
+                final targetPlayer = playersList[playerIndexInDatabase];
+                final updatedScores = targetPlayer.scores.toList();
 
-            final finalValueModifier = currentOp == ScoreOp.add
-                ? parsedValue
-                : -parsedValue;
-            final newScore = currentScore + finalValueModifier;
+                if (scoreIndex != null) {
+                  updatedScores[scoreIndex] = scoreToSave;
+                } else {
+                  updatedScores.add(scoreToSave);
+                }
 
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 20.0,
-                right: 20.0,
-                top: 24.0,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24.0,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // 1. TITLE & CALCULATION HEADER
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        isEditing
-                            ? AppLocalizations.of(context)!.editScore(player.playerName ?? AppLocalizations.of(context)!.genericPlayerName)
-                            : (player.playerName ?? AppLocalizations.of(context)!.genericPlayerName),
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${AppLocalizations.of(context)!.scoreChange}: $currentScore → $newScore',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.54),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
+                targetPlayer.scores = updatedScores;
+                playersList[playerIndexInDatabase] = targetPlayer;
 
-                  // 2. THE OPERATION CONTROLLER (ADD / SUBTRACT)
-                  SegmentedButton<ScoreOp>(
-                    segments: <ButtonSegment<ScoreOp>>[
-                      ButtonSegment<ScoreOp>(
-                        value: ScoreOp.add,
-                        label: Text(AppLocalizations.of(context)!.add),
-                        icon: const Icon(Icons.add),
-                      ),
-                      ButtonSegment<ScoreOp>(
-                        value: ScoreOp.subtract,
-                        label: Text(AppLocalizations.of(context)!.subtract),
-                        icon: const Icon(Icons.remove),
-                      ),
-                    ],
-                    selected: <ScoreOp>{currentOp},
-                    onSelectionChanged: (Set<ScoreOp> newSelection) {
-                      setModalState(() {
-                        currentOp = newSelection.first;
-                      });
-                    },
-                  ),
+                currentMatchSession.players = playersList;
+                sessionsList[widget.sessionIndex] =
+                    currentMatchSession;
+                _game!.sessions = sessionsList;
 
-                  const SizedBox(height: 20),
+                await isar.writeTxn(() async {
+                  await isar.boardGames.put(_game!);
+                });
 
-                  // 3. MAIN INPUT FIELD
-                  TextField(
-                    controller: scoreController,
-                    autofocus: true,
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.pointsLabel,
-                      hintText: AppLocalizations.of(context)!.pointsHint,
-                      prefixIcon: Icon(
-                        currentOp == ScoreOp.add ? Icons.add : Icons.remove,
-                        color: currentOp == ScoreOp.add
-                            ? AppTheme.accent
-                            : AppTheme.destructive,
-                      ),
-                    ),
-                    keyboardType: TextInputType.number,
-                  ),
-                  const SizedBox(height: 16),
+                // Fire localized view updates back up to the calling history panel
+                if (setSheetState != null) {
+                  setSheetState(() {});
+                }
 
-                  TextField(
-                    controller: descController,
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.pointDescriptionLabel,
-                      hintText: AppLocalizations.of(context)!.pointDescriptionHint,
-                      prefixIcon: const Icon(Icons.notes_outlined),
-                    ),
-                    textCapitalization: TextCapitalization.sentences,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // 4. QUICK SELECT CHIPS
-                  Text(
-                    AppLocalizations.of(context)!.quickSelect,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.4),
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [5, 10, 15, 20].map((int value) {
-                      return Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: _buildEqualWidthChip(
-                            value,
-                            currentOp,
-                            scoreController,
-                            setModalState,
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // 5. ACTION BUTTON CONTROLS FOOTER
-                  OverflowBar(
-                    alignment: MainAxisAlignment.end,
-                    spacing: 8.0,
-                    overflowSpacing: 8.0,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(AppLocalizations.of(context)!.cancel),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primary,
-                          foregroundColor: AppTheme.primaryForeground,
-                        ),
-                        onPressed: () async {
-                          if (_game == null ||
-                              scoreController.text.trim().isEmpty) {
-                            return;
-                          }
-
-                          final sessionsList = _game!.sessions.toList();
-                          final currentMatchSession =
-                              sessionsList[widget.sessionIndex];
-                          final playersList =
-                              (currentMatchSession.players ?? <PlayerSession>[])
-                                  .toList();
-
-                          // Instantiate updated score details
-                          final targetScoreEntry = ScoreEntry()
-                            ..value = finalValueModifier
-                            ..description = descController.text.trim().isEmpty
-                                ? null
-                                : descController.text.trim();
-
-                          final targetPlayer =
-                              playersList[playerIndexInDatabase];
-                          final updatedScores = targetPlayer.scores.toList();
-
-                          if (isEditing) {
-                            // Mutate the existing element at its index placement
-                            updatedScores[scoreIndex] = targetScoreEntry;
-                          } else {
-                            // Append directly to history
-                            updatedScores.add(targetScoreEntry);
-                          }
-
-                          targetPlayer.scores = updatedScores;
-                          playersList[playerIndexInDatabase] = targetPlayer;
-
-                          currentMatchSession.players = playersList;
-                          sessionsList[widget.sessionIndex] =
-                              currentMatchSession;
-                          _game!.sessions = sessionsList;
-
-                          await isar.writeTxn(() async {
-                            await isar.boardGames.put(_game!);
-                          });
-
-                          // Fire localized view updates back up to the calling history panel
-                          if (setSheetState != null) {
-                            setSheetState(() {});
-                          }
-
-                          if (context.mounted) Navigator.pop(context);
-                        },
-                        child: Text(isEditing ? AppLocalizations.of(context)!.save : AppLocalizations.of(context)!.logScore),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                if (context.mounted) Navigator.pop(context);
+              }
             );
           },
         );
-      },
-    );
-  }
-
-  Widget _buildEqualWidthChip(
-    int value,
-    ScoreOp currentOp,
-    TextEditingController scoreController,
-    StateSetter setModalState,
-  ) {
-    final String prefix = currentOp == ScoreOp.add ? '+' : '-';
-    final isAdd = currentOp == ScoreOp.add;
-
-    return ActionChip(
-      // Enforces centered alignment inside the expanded boundaries
-      label: Center(
-        child: Text(
-          '$prefix$value',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            // Switches typography colors depending on the operational math state
-            color: isAdd 
-                ? AppTheme.secondaryForeground 
-                : AppTheme.destructiveForeground,
-          ),
-        ),
-      ),
-      // Solid structural background injection based on the operation type
-      backgroundColor: isAdd 
-          ? AppTheme.secondary 
-          : AppTheme.destructive,
-      // We completely strip the border side tinting line since we are using solid fills
-      side: BorderSide.none, 
-      onPressed: () {
-        setModalState(() {
-          scoreController.text = value.toString();
-          scoreController.selection = TextSelection.fromPosition(
-            TextPosition(offset: scoreController.text.length),
-          );
-        });
       },
     );
   }
@@ -558,120 +244,24 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
             // Re-fetch the fresh live player instance from our synced state
             final currentMatch = _game!.sessions[widget.sessionIndex];
             final livePlayer = currentMatch.players[playerIndexInDatabase];
-            final scores = livePlayer.scores;
 
-            return Padding(
-              padding: EdgeInsets.only(
-                top: 16.0,
-                left: 16.0,
-                right: 16.0,
-                bottom:
-                    MediaQuery.of(context).viewInsets.bottom +
-                    16.0, // Keyboard safety
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.scoreHistory(livePlayer.playerName ?? AppLocalizations.of(context)!.genericPlayerName),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  scores.isEmpty
-                      ? Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          child: Center(
-                            child: Text(AppLocalizations.of(context)!.noScoresYet),
-                          ),
-                        )
-                      : Flexible(
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: scores.length,
-                            itemBuilder: (context, index) {
-                              final reversedIndex = scores.length - 1 - index;
-                              final entry = scores[reversedIndex];
-
-                              final valueString = (entry.value ?? 0) >= 0
-                                  ? '+${entry.value}'
-                                  : '${entry.value}';
-
-                              return ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: (entry.value ?? 0) >= 0
-                                      ? AppTheme.secondary
-                                      : AppTheme.destructive,
-                                  child: Text(
-                                    '#${reversedIndex + 1}',
-                                    style: TextStyle(
-                                      color: (entry.value ?? 0) >= 0
-                                        ? AppTheme.secondaryForeground
-                                        : AppTheme.destructiveForeground,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                title: Text(
-                                  '$valueString ${AppLocalizations.of(context)!.points}',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  entry.description ?? AppLocalizations.of(context)!.notAvailable,
-                                  style: const TextStyle(
-                                    color: AppTheme.mutedForeground
-                                  )
-                                ),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    // EDIT ENTRY BUTTON
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.edit_outlined,
-                                        color: AppTheme.primary,
-                                        size: 20,
-                                      ),
-                                      onPressed: () {
-                                        _showScoreEntryFormBottomSheet(
-                                          livePlayer, // 1. Required positional player data object
-                                          playerIndexInDatabase, // 2. Required positional target database index slot
-                                          scoreIndex:
-                                              reversedIndex, // Named parameter identifying which entry is targeted
-                                          setSheetState:
-                                              setSheetState, // Named parameter callback to force live data rebuilds below
-                                        );
-                                      },
-                                    ),
-                                    // DELETE ENTRY BUTTON
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.delete_outline,
-                                        color: AppTheme.destructive,
-                                        size: 20,
-                                      ),
-                                      onPressed: () {
-                                        _deleteSingleScoreEntry(
-                                          playerIndexInDatabase,
-                                          reversedIndex,
-                                          setSheetState,
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                  const SizedBox(height: 10),
-                ],
-              ),
+            return PlayerScoreHistory(
+              player: livePlayer,
+              onEdit: (index) {
+                _showScoreEntryFormBottomSheet(
+                  livePlayer, // 1. Required positional player data object
+                  playerIndexInDatabase, // 2. Required positional target database index slot
+                  scoreIndex: index, // Named parameter identifying which entry is targeted
+                  setSheetState: setSheetState, // Named parameter callback to force live data rebuilds below
+                );
+              },
+              onDelete: (index) {
+                _deleteSingleScoreEntry(
+                  playerIndexInDatabase,
+                  index,
+                  setSheetState,
+                );
+              }
             );
           },
         );
@@ -787,6 +377,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
     final currentMatchSession = _game!.sessions[widget.sessionIndex];
     final basePlayers = currentMatchSession.players ?? <PlayerSession>[];
+    final sessionName = currentMatchSession.name?.isEmpty ?? true ? AppLocalizations.of(context)!.indexedSession(widget.sessionIndex + 1) : currentMatchSession.name!;
     int? topPlayerIndex;
 
     final List<MapEntry<int, PlayerSession>> indexedPlayers = basePlayers
@@ -808,7 +399,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(currentMatchSession.name ?? AppLocalizations.of(context)!.sessionScores),
+            Text(sessionName),
             const SizedBox(height: 2), // Tiny spacer between lines
             Text(
               _game?.name ?? AppLocalizations.of(context)!.boardGame,
@@ -843,165 +434,33 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
               final playerName = playerSession.playerName ?? AppLocalizations.of(context)!.genericPlayerName;
               final isWinner = topPlayerIndex == index;
 
-              // Show a mini tally of how many point entries they have logged total
-              final totalRounds = playerSession.scores.length;
-
-              final inheritedColor = playerSession.playerColorValue ?? _game?.colorValue;
-              final Color highlightColor = inheritedColor != null ? Color(inheritedColor) : AppTheme.palette.first;
-              
-              return StylizedCard(
-                shadowColor: highlightColor,
-                margin: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ListTile(
-                      title: Row(
-                        spacing: 8.0,
-                        children: [
-                          Text(
-                            playerName,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          
-                          if (isWinner)
-                            const Icon(
-                              Icons.star,
-                              color: Colors.amber,
-                              size: 18,
-                            ),
-                        ],
-                      ),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                // Standard translucent chip background: rgba(255, 255, 255, 0.07)
-                                color: const Color(0x12FFFFFF), 
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min, // Wraps container tightly around content
-                                children: [
-                                  Icon(
-                                    Icons.layers_outlined,
-                                    size: 13,
-                                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text.rich(
-                                    TextSpan(
-                                      children: [
-                                        TextSpan(
-                                          text: '$totalRounds ',
-                                          style: TextStyle(
-                                            color: highlightColor,
-                                            fontWeight: FontWeight.w600, // Pop highlighting matching your other metric chips
-                                          ),
-                                        ),
-                                        TextSpan(
-                                          text: AppLocalizations.of(context)!.rounds, // Simplified text to fit standard metadata patterns
-                                        ),
-                                      ],
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w500,
-                                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        )
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(
-                              Icons.edit_outlined,
-                              color: highlightColor,
-                            ),
-                            tooltip: AppLocalizations.of(context)!.editPlayer,
-                            onPressed: () {
-                              _showPlayerFormBottomSheet(
-                                playerIndexInDatabase: trueIndexInDatabase,
-                              );
-                            },
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              Icons.history,
-                              color: highlightColor,
-                            ),
-                            tooltip: AppLocalizations.of(context)!.viewScoreHistory,
-                            onPressed: () {
-                              _showPlayerHistorySheet(
-                                playerSession,
-                                trueIndexInDatabase,
-                              );
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.delete_outline,
-                              color: AppTheme.destructive,
-                            ),
-                            tooltip: AppLocalizations.of(context)!.removePlayer,
-                            onPressed: () {
-                              _showDeleteConfirmationDialog(
-                                trueIndexInDatabase,
-                                playerName,
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    ListTile(
-                      title: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8.0,
-                          vertical: 4.0,
-                        ),
-                        child: Container(
-                          width: double.infinity,
-                          height: 50,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: highlightColor, // Replace with your desired border color
-                              width: 1.5,                           // Border thickness
-                            ),
-                          ),
-                          child: Text(
-                            '${playerSession.totalScore}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: highlightColor,
-                              fontSize: 20,
-                            ),
-                          ),
-                        ),
-                      ),
-                      onTap: () {
-                        _showScoreEntryFormBottomSheet(
-                          playerSession,
-                          trueIndexInDatabase,
-                        );
-                      },
-                    )
-                  ],
-                ),
+              return PlayerCard(
+                game: _game!,
+                player: playerSession,
+                isWinner: isWinner,
+                onEdit: () {
+                  _showPlayerFormBottomSheet(
+                    playerIndexInDatabase: trueIndexInDatabase,
+                  );
+                },
+                onDelete: () {
+                  _showDeleteConfirmationDialog(
+                    trueIndexInDatabase,
+                    playerName,
+                  );
+                },
+                onHistory: () {
+                  _showPlayerHistorySheet(
+                    playerSession,
+                    trueIndexInDatabase,
+                  );
+                },
+                onScore: () {
+                  _showScoreEntryFormBottomSheet(
+                    playerSession,
+                    trueIndexInDatabase,
+                  );
+                }
               );
             },
           ),
