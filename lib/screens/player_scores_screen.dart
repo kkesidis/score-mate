@@ -305,14 +305,11 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
   void _startRematch(List<PlayerSession> currentPlayers) async {
     if (_game == null) return;
 
-    // 1. Extract player names from the current session
-    final existingNames = currentPlayers
-        .map((p) => p.playerName?.trim())
-        .where((name) => name != null && name.isNotEmpty)
-        .cast<String>()
+    final existingPlayers = currentPlayers
+        .where((p) => p.playerName?.isNotEmpty ?? false)
         .toList();
 
-    if (existingNames.isEmpty) {
+    if (existingPlayers.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!.addPlayersBeforeRematch),
@@ -321,14 +318,13 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       return;
     }
 
-    // 2. Prepare the new match session structures
     final sessionsList = _game!.sessions.toList();
     final nextMatchNumber = sessionsList.length + 1;
 
-    // Construct fresh clean player sheets with empty score arrays
-    final cleanRematchPlayers = existingNames.map((name) {
+    final cleanRematchPlayers = existingPlayers.map((existingPlayer) {
       return PlayerSession()
-        ..playerName = name
+        ..playerName = existingPlayer.playerName
+        ..playerColorValue = existingPlayer.playerColorValue
         ..scores = [];
     }).toList();
 
@@ -337,18 +333,16 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       ..dateTime = DateTime.now()
       ..players = cleanRematchPlayers;
 
-    // Isar expects items appended chronologically (newest at the end of the array)
     sessionsList.add(newMatchSession);
     _game!.sessions = sessionsList;
 
-    // 3. Commit to the database
     await isar.writeTxn(() async {
       await isar.boardGames.put(_game!);
     });
 
     if (!mounted) return;
 
-    // 4. NAVIGATION TRICK: Pop the current screen off the stack, and replace it
+    // Pop the current screen off the stack, and replace it
     // with a brand new viewport targeted at the last index of the updated list!
     final newSessionIndex = sessionsList.length - 1;
 
