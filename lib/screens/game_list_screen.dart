@@ -3,11 +3,11 @@ import 'package:isar/isar.dart';
 import '../main.dart';
 import '../models/board_game.dart';
 import '../models/app_theme.dart';
-import 'package:go_router/go_router.dart';
 import '../l10n/app_localizations.dart';
-import '../widgets/custom_app_bar.dart';
 import '../widgets/game_card.dart';
 import '../widgets/game_form.dart';
+import 'match_sessions_screen.dart';
+import '../widgets/base_layout.dart';
 
 class GameListScreen extends StatefulWidget {
   const GameListScreen({super.key});
@@ -114,28 +114,24 @@ class _GameListScreenState extends State<GameListScreen> {
       a.name.toLowerCase().compareTo(b.name.toLowerCase())
     );
 
-    return Scaffold(
-      appBar: CustomAppBar(
-        title: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('ScoreDen'),
-            const SizedBox(height: 2), // Tiny spacer between lines
-            Text(
-              AppLocalizations.of(context)!.gamesTracked(_games.length),
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w400,
-                color: Theme.of(context).colorScheme.onSurface.withValues(
-                  alpha: 0.6,
-                ), // Fades out the subtitle nicely
-              ),
-            ),
-          ],
+    return BaseLayout(
+      title: const Text('ScoreDen'),
+      subtitle: Text(
+        AppLocalizations.of(context)!.gamesTracked(_games.length),
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w400,
+          color: Theme.of(context).colorScheme.onSurface.withValues(
+            alpha: 0.6,
+          ), // Fades out the subtitle nicely
         ),
       ),
-      body: sortedGames.isEmpty
+      floatingActionButton: FloatingActionButton(
+        onPressed: () =>
+            _showGameDialog(),
+        child: const Icon(Icons.add),
+      ),
+      child: sortedGames.isEmpty
         ? Center(child: Text(AppLocalizations.of(context)!.noGamesYet))
         : ListView.builder(
             itemCount: sortedGames.length,
@@ -145,7 +141,13 @@ class _GameListScreenState extends State<GameListScreen> {
               return GameCard(
                 game: game,
                 onSelect: () {
-                  context.go('/home/${game.id}/sessions');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          MatchSessionsScreen(gameId: game.id),
+                    ),
+                  );
                 },
                 onEdit: () {
                   _showGameDialog(existingGame: game);
@@ -155,12 +157,7 @@ class _GameListScreenState extends State<GameListScreen> {
                 },
               );
             },
-          ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () =>
-            _showGameDialog(),
-        child: const Icon(Icons.add),
-      ),
+          )
     );
   }
 }

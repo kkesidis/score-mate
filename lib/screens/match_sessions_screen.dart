@@ -3,11 +3,11 @@ import '../main.dart'; // Imports our global 'isar' instance
 import '../models/board_game.dart';
 import '../models/app_theme.dart';
 import 'dart:async';
-import 'package:go_router/go_router.dart';
 import '../l10n/app_localizations.dart';
-import '../widgets/custom_app_bar.dart';
 import '../widgets/session_card.dart';
 import '../widgets/session_form.dart';
+import 'player_scores_screen.dart';
+import '../widgets/base_layout.dart';
 
 class MatchSessionsScreen extends StatefulWidget {
   final int gameId;
@@ -169,28 +169,23 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
     // Read the list from our dynamically updated local game variable
     final sessions = _game!.sessions;
 
-    return Scaffold(
-      appBar: CustomAppBar(
-        title: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(AppLocalizations.of(context)!.sessionsTitle),
-            const SizedBox(height: 2), // Tiny spacer between lines
-            Text(
-              _game!.name,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w400,
-                color: Theme.of(context).colorScheme.onSurface.withValues(
-                  alpha: 0.6,
-                ), // Fades out the subtitle nicely
-              ),
-            ),
-          ],
+    return BaseLayout(
+      title: Text(AppLocalizations.of(context)!.sessionsTitle),
+      subtitle: Text(
+        _game!.name,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w400,
+          color: Theme.of(context).colorScheme.onSurface.withValues(
+            alpha: 0.6,
+          ), // Fades out the subtitle nicely
         ),
       ),
-      body: sessions.isEmpty
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showSessionDialog,
+        child: const Icon(Icons.add),
+      ),
+      child: sessions.isEmpty
         ? Center(child: Text(AppLocalizations.of(context)!.noSessionsYet))
         : ListView.builder(
           itemCount: sessions.length,
@@ -209,7 +204,15 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
               session: session,
               sessionIndex: reversedIndex,
               onSelect: () {
-                context.go('/home/${_game!.id}/sessions/$reversedIndex');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PlayerScoresScreen(
+                      gameId: _game!.id,
+                      sessionIndex: reversedIndex,
+                    ),
+                  ),
+                );
               },
               onEdit: () {
                 _showSessionDialog(actualIndex: reversedIndex);
@@ -222,11 +225,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
               }
             );
           },
-        ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showSessionDialog,
-        child: const Icon(Icons.add),
-      ),
+        )
     );
   }
 }

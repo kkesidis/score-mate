@@ -230,7 +230,7 @@ class AppLocalizationsEl extends AppLocalizations {
   String get pointDescriptionHint => 'π.χ. Γύρος 1, Ποινή';
 
   @override
-  String get home => 'Αρχική';
+  String get boardGames => 'Επιτραπέζια Παιχνίδια';
 
   @override
   String get settings => 'Ρυθμίσεις';

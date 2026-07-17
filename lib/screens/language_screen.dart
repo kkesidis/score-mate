@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter/scheduler.dart';
 import '../l10n/app_localizations.dart';
 import '../main.dart';
-import '../widgets/custom_app_bar.dart';
+import '../widgets/base_layout.dart';
 
 class LanguageScreen extends StatefulWidget {
   const LanguageScreen({super.key});
@@ -19,28 +18,19 @@ class _LanguageScreenState extends State<LanguageScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      appBar: CustomAppBar(
-        title: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('ScoreDen'),
-            const SizedBox(height: 2),
-            Text(
-              l10n.language, 
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w400,
-                color: Theme.of(context).colorScheme.onSurface.withValues(
-                  alpha: 0.6,
-                ),
-              ),
-            ),
-          ],
+    return BaseLayout(
+      title: const Text('ScoreDen'),
+      subtitle: Text(
+        l10n.language, 
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w400,
+          color: Theme.of(context).colorScheme.onSurface.withValues(
+            alpha: 0.6,
+          ),
         ),
       ),
-      body: ListView(
+      child: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
           Card(
@@ -82,7 +72,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
                               
                               SchedulerBinding.instance.addPostFrameCallback((_) {
                                 if (context.mounted) {
-                                  context.go('/home');
+                                  Navigator.pop(context);
                                 }
                               });
                             },

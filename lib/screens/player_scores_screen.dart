@@ -3,11 +3,11 @@ import '../main.dart';
 import '../models/board_game.dart';
 import '../models/app_theme.dart';
 import '../l10n/app_localizations.dart';
-import '../widgets/custom_app_bar.dart';
 import '../widgets/player_card.dart';
 import '../widgets/player_score_history.dart';
 import '../widgets/player_form.dart';
 import '../widgets/score_form.dart';
+import '../widgets/base_layout.dart';
 
 class PlayerScoresScreen extends StatefulWidget {
   final int gameId;
@@ -393,36 +393,32 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       topPlayerIndex = topPlayerEntry.key;
     }
 
-    return Scaffold(
-      appBar: CustomAppBar(
-        title: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(sessionName),
-            const SizedBox(height: 2), // Tiny spacer between lines
-            Text(
-              _game?.name ?? AppLocalizations.of(context)!.boardGame,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w400,
-                color: Theme.of(context).colorScheme.onSurface.withValues(
-                  alpha: 0.6,
-                ), // Fades out the subtitle nicely
-              ),
-            ),
-          ],
+    return BaseLayout(
+      title: Text(sessionName),
+      subtitle: Text(
+        _game?.name ?? AppLocalizations.of(context)!.boardGame,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w400,
+          color: Theme.of(context).colorScheme.onSurface.withValues(
+            alpha: 0.6,
+          ), // Fades out the subtitle nicely
         ),
-        additionalActions: [
-          if (basePlayers.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.replay),
-              tooltip: AppLocalizations.of(context)!.rematch,
-              onPressed: () => _startRematch(basePlayers),
-            ),
-        ],
       ),
-      body: indexedPlayers.isEmpty
+      floatingActionButton: FloatingActionButton(
+        onPressed:
+            _showPlayerFormBottomSheet, // Floating Action Button now strictly registers new names
+        child: const Icon(Icons.add),
+      ),
+      additionalActions: [
+        if (basePlayers.isNotEmpty)
+          IconButton(
+            icon: const Icon(Icons.replay),
+            tooltip: AppLocalizations.of(context)!.rematch,
+            onPressed: () => _startRematch(basePlayers),
+          ),
+      ],
+      child: indexedPlayers.isEmpty
         ? Center(child: Text(AppLocalizations.of(context)!.noPlayersAddedYet),)
         : ListView.builder(
             itemCount: indexedPlayers.length,
@@ -464,11 +460,6 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
               );
             },
           ),
-      floatingActionButton: FloatingActionButton(
-        onPressed:
-            _showPlayerFormBottomSheet, // Floating Action Button now strictly registers new names
-        child: const Icon(Icons.add),
-      ),
     );
   }
 }
