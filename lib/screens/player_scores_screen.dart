@@ -3,11 +3,11 @@ import '../main.dart';
 import '../models/board_game.dart';
 import '../models/app_theme.dart';
 import '../l10n/app_localizations.dart';
-import '../widgets/custom_app_bar.dart';
 import '../widgets/player_card.dart';
 import '../widgets/player_score_history.dart';
 import '../widgets/player_form.dart';
 import '../widgets/score_form.dart';
+import '../widgets/base_layout.dart';
 
 class PlayerScoresScreen extends StatefulWidget {
   final int gameId;
@@ -305,14 +305,11 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
   void _startRematch(List<PlayerSession> currentPlayers) async {
     if (_game == null) return;
 
-    // 1. Extract player names from the current session
-    final existingNames = currentPlayers
-        .map((p) => p.playerName?.trim())
-        .where((name) => name != null && name.isNotEmpty)
-        .cast<String>()
+    final existingPlayers = currentPlayers
+        .where((p) => p.playerName?.isNotEmpty ?? false)
         .toList();
 
-    if (existingNames.isEmpty) {
+    if (existingPlayers.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(AppLocalizations.of(context)!.addPlayersBeforeRematch),
@@ -321,14 +318,13 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       return;
     }
 
-    // 2. Prepare the new match session structures
     final sessionsList = _game!.sessions.toList();
     final nextMatchNumber = sessionsList.length + 1;
 
-    // Construct fresh clean player sheets with empty score arrays
-    final cleanRematchPlayers = existingNames.map((name) {
+    final cleanRematchPlayers = existingPlayers.map((existingPlayer) {
       return PlayerSession()
-        ..playerName = name
+        ..playerName = existingPlayer.playerName
+        ..playerColorValue = existingPlayer.playerColorValue
         ..scores = [];
     }).toList();
 
@@ -337,18 +333,16 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       ..dateTime = DateTime.now()
       ..players = cleanRematchPlayers;
 
-    // Isar expects items appended chronologically (newest at the end of the array)
     sessionsList.add(newMatchSession);
     _game!.sessions = sessionsList;
 
-    // 3. Commit to the database
     await isar.writeTxn(() async {
       await isar.boardGames.put(_game!);
     });
 
     if (!mounted) return;
 
-    // 4. NAVIGATION TRICK: Pop the current screen off the stack, and replace it
+    // Pop the current screen off the stack, and replace it
     // with a brand new viewport targeted at the last index of the updated list!
     final newSessionIndex = sessionsList.length - 1;
 
@@ -393,36 +387,48 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       topPlayerIndex = topPlayerEntry.key;
     }
 
-    return Scaffold(
-      appBar: CustomAppBar(
-        title: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(sessionName),
-            const SizedBox(height: 2), // Tiny spacer between lines
-            Text(
-              _game?.name ?? AppLocalizations.of(context)!.boardGame,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w400,
-                color: Theme.of(context).colorScheme.onSurface.withValues(
-                  alpha: 0.6,
-                ), // Fades out the subtitle nicely
-              ),
-            ),
-          ],
+    return BaseLayout(
+      title: Text(sessionName),
+      subtitle: Text(
+        _game?.name ?? AppLocalizations.of(context)!.boardGame,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w400,
+          color: Theme.of(context).colorScheme.onSurface.withValues(
+            alpha: 0.6,
+          ), // Fades out the subtitle nicely
         ),
-        additionalActions: [
-          if (basePlayers.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.replay),
-              tooltip: AppLocalizations.of(context)!.rematch,
-              onPressed: () => _startRematch(basePlayers),
-            ),
-        ],
       ),
-      body: indexedPlayers.isEmpty
+      floatingActionButton: FloatingActionButton(
+        onPressed:
+            _showPlayerFormBottomSheet, // Floating Action Button now strictly registers new names
+        child: const Icon(Icons.add),
+      ),
+      additionalActions: [
+        if (basePlayers.isNotEmpty)
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            tooltip: AppLocalizations.of(context)!.sessionOptions,
+            onSelected: (String value) {
+              if (value == 'rematch') {
+                _startRematch(basePlayers);
+              } 
+            },
+            itemBuilder: (BuildContext context) => [
+              PopupMenuItem<String>(
+                value: 'rematch',
+                child: Row(
+                  children: [
+                    const Icon(Icons.replay, size: 20),
+                    const SizedBox(width: 8),
+                    Text(AppLocalizations.of(context)!.rematch),
+                  ],
+                ),
+              ),
+            ],
+          )
+      ],
+      child: indexedPlayers.isEmpty
         ? Center(child: Text(AppLocalizations.of(context)!.noPlayersAddedYet),)
         : ListView.builder(
             itemCount: indexedPlayers.length,
@@ -464,11 +470,6 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
               );
             },
           ),
-      floatingActionButton: FloatingActionButton(
-        onPressed:
-            _showPlayerFormBottomSheet, // Floating Action Button now strictly registers new names
-        child: const Icon(Icons.add),
-      ),
     );
   }
 }

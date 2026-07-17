@@ -66,10 +66,11 @@
   "pointsHint": "π.χ. 5",
   "pointDescriptionLabel": "Σημείωση / Περιγραφή (προαιρετικό)",
   "pointDescriptionHint": "π.χ. Γύρος 1, Ποινή",
-  "home": "Αρχική",
+  "boardGames": "Επιτραπέζια Παιχνίδια",
   "settings": "Ρυθμίσεις",
   "language": "Γλώσσα",
   "notAvailable": "-",
   "couldNotFindGame": "Δεν βρέθηκε το παιχνίδι",
-  "chooseColor": "Επιλέξτε χρώμα"
+  "chooseColor": "Επιλέξτε χρώμα",
+  "sessionOptions": "Ρυθμίσεις παρτίδας"
 }

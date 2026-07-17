@@ -4,8 +4,8 @@ import 'package:path_provider/path_provider.dart';
 import 'models/board_game.dart';
 import 'models/app_theme.dart';
 import 'models/settings.dart';
-import 'router.dart';
 import 'l10n/app_localizations.dart';
+import 'screens/game_list_screen.dart';
 
 final ValueNotifier<String> appLanguageNotifier = ValueNotifier('en');
 late Isar isar;
@@ -37,10 +37,10 @@ class ScoreDenApp extends StatelessWidget {
     return ValueListenableBuilder<String>(
       valueListenable: appLanguageNotifier,
       builder: (context, currentLanguageCode, child) {
-        return MaterialApp.router(
+        return MaterialApp(
           title: 'ScoreDen',
           debugShowCheckedModeBanner: false,
-          routerConfig: appRouter,
+          home: const GameListScreen(),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           locale: Locale(currentLanguageCode),

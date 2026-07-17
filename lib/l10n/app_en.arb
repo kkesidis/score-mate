@@ -66,10 +66,11 @@
   "pointsHint": "e.g. 5",
   "pointDescriptionLabel": "Note / Description (optional)",
   "pointDescriptionHint": "e.g. Round 1, Pentalty",
-  "home": "Home",
+  "boardGames": "Board Games",
   "settings": "Settings",
   "language": "Language",
   "notAvailable": "-",
   "couldNotFindGame": "",
-  "chooseColor": "Choose color"
+  "chooseColor": "Choose color",
+  "sessionOptions": "Session options"
 }

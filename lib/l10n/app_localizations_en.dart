@@ -227,7 +227,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pointDescriptionHint => 'e.g. Round 1, Pentalty';
 
   @override
-  String get home => 'Home';
+  String get boardGames => 'Board Games';
 
   @override
   String get settings => 'Settings';
@@ -243,4 +243,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chooseColor => 'Choose color';
+
+  @override
+  String get sessionOptions => 'Session options';
 }

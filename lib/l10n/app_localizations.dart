@@ -494,11 +494,11 @@ abstract class AppLocalizations {
   /// **'e.g. Round 1, Pentalty'**
   String get pointDescriptionHint;
 
-  /// No description provided for @home.
+  /// No description provided for @boardGames.
   ///
   /// In en, this message translates to:
-  /// **'Home'**
-  String get home;
+  /// **'Board Games'**
+  String get boardGames;
 
   /// No description provided for @settings.
   ///
@@ -529,6 +529,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose color'**
   String get chooseColor;
+
+  /// No description provided for @sessionOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Session options'**
+  String get sessionOptions;
 }
 
 class _AppLocalizationsDelegate
