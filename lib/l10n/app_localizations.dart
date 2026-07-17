@@ -529,6 +529,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose color'**
   String get chooseColor;
+
+  /// No description provided for @sessionOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Session options'**
+  String get sessionOptions;
 }
 
 class _AppLocalizationsDelegate

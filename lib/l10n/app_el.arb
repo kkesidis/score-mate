@@ -71,5 +71,6 @@
   "language": "Γλώσσα",
   "notAvailable": "-",
   "couldNotFindGame": "Δεν βρέθηκε το παιχνίδι",
-  "chooseColor": "Επιλέξτε χρώμα"
+  "chooseColor": "Επιλέξτε χρώμα",
+  "sessionOptions": "Ρυθμίσεις παρτίδας"
 }

@@ -246,4 +246,7 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get chooseColor => 'Επιλέξτε χρώμα';
+
+  @override
+  String get sessionOptions => 'Ρυθμίσεις παρτίδας';
 }

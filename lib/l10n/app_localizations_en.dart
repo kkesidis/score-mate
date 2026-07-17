@@ -243,4 +243,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chooseColor => 'Choose color';
+
+  @override
+  String get sessionOptions => 'Session options';
 }

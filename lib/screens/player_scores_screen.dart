@@ -412,11 +412,27 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       ),
       additionalActions: [
         if (basePlayers.isNotEmpty)
-          IconButton(
-            icon: const Icon(Icons.replay),
-            tooltip: AppLocalizations.of(context)!.rematch,
-            onPressed: () => _startRematch(basePlayers),
-          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            tooltip: AppLocalizations.of(context)!.sessionOptions,
+            onSelected: (String value) {
+              if (value == 'rematch') {
+                _startRematch(basePlayers);
+              } 
+            },
+            itemBuilder: (BuildContext context) => [
+              PopupMenuItem<String>(
+                value: 'rematch',
+                child: Row(
+                  children: [
+                    const Icon(Icons.replay, size: 20),
+                    const SizedBox(width: 8),
+                    Text(AppLocalizations.of(context)!.rematch),
+                  ],
+                ),
+              ),
+            ],
+          )
       ],
       child: indexedPlayers.isEmpty
         ? Center(child: Text(AppLocalizations.of(context)!.noPlayersAddedYet),)
