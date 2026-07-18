@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/board_game.dart';
-import '../models/app_theme.dart';
+import '../theme/app_theme.dart';
 import '../l10n/app_localizations.dart';
 
 class PlayerScoreHistory extends StatelessWidget {

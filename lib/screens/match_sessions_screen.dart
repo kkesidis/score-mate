@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../main.dart'; // Imports our global 'isar' instance
 import '../models/board_game.dart';
-import '../models/app_theme.dart';
+import '../theme/app_theme.dart';
 import 'dart:async';
 import '../l10n/app_localizations.dart';
 import '../widgets/session_card.dart';
