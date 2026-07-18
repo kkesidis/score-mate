@@ -1413,6 +1413,11 @@ const PlayerSessionSchema = Schema(
       name: r'scores',
       type: IsarType.objectList,
       target: r'ScoreEntry',
+    ),
+    r'totalScore': PropertySchema(
+      id: 3,
+      name: r'totalScore',
+      type: IsarType.long,
     )
   },
   estimateSize: _playerSessionEstimateSize,
@@ -1458,6 +1463,7 @@ void _playerSessionSerialize(
     ScoreEntrySchema.serialize,
     object.scores,
   );
+  writer.writeLong(offsets[3], object.totalScore);
 }
 
 PlayerSession _playerSessionDeserialize(
@@ -1498,6 +1504,8 @@ P _playerSessionDeserializeProp<P>(
             ScoreEntry(),
           ) ??
           []) as P;
+    case 3:
+      return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -1819,6 +1827,62 @@ extension PlayerSessionQueryFilter
         upper,
         includeUpper,
       );
+    });
+  }
+
+  QueryBuilder<PlayerSession, PlayerSession, QAfterFilterCondition>
+      totalScoreEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'totalScore',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayerSession, PlayerSession, QAfterFilterCondition>
+      totalScoreGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'totalScore',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayerSession, PlayerSession, QAfterFilterCondition>
+      totalScoreLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'totalScore',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<PlayerSession, PlayerSession, QAfterFilterCondition>
+      totalScoreBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'totalScore',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
     });
   }
 }

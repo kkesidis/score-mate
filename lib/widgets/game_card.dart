@@ -69,7 +69,7 @@ class GameCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: const Color(0x12FFFFFF), 
+                      color: Theme.of(context).colorScheme.secondaryContainer, 
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text.rich(
@@ -84,13 +84,13 @@ class GameCard extends StatelessWidget {
                           ),
                           TextSpan(
                             text: l10n.sessions,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                            style: const TextStyle(
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
-                        style: const TextStyle(
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSecondaryContainer,
                           fontSize: 12,
                         ),
                       ),

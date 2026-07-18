@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
+enum ThemeType {light, dark}
+
 class AppTheme {
   AppTheme._();
 
@@ -23,6 +25,42 @@ class AppTheme {
     Color(0xFFFB64B6),
     Color(0xFFFF637E),
   ];
+
+  static const AppColors lightThemeColors = AppColors(
+    background: Color(0xFFF4F7FA),
+    foreground: Color(0xFF121D2C),
+    card: Color(0xFFFFFFFF),
+    cardForeground: Color(0xFF121D2C),
+    popover: Color(0xFFFFFFFF),
+    popoverForeground: Color(0xFF121D2C),
+    primary: Color(0xFF3A759B), // Slightly deepened for better readability contrast on light backgrounds
+    primaryForeground: Color(0xFFFFFFFF),
+    secondary: Color(0xFFE2E9F0),
+    secondaryForeground: Color(0xFF121D2C),
+    accent: Color(0xFF389E98), // Slightly deepened for crisp contrast
+    accentForeground: Color(0xFFFFFFFF),
+    destructive: Color(0xFFD34E4E),
+    destructiveForeground: Color(0xFFFFFFFF),
+    muted: Color(0xFFEBF0F5),
+    mutedForeground: Color(0xFF5A798C),
+    ring: Color(0xFF3A759B),
+    switchBackground: Color(0xFFCBD6E2),
+    border: Color(0x1F0D1520), // Dark color with low opacity for clean divider lines
+    input: Color(0xFF121D2C),  
+    inputBackground: Color(0xFFFFFFFF),
+    sidebar: Color(0xFFEBF0F5),
+    sidebarForeground: Color(0xFF121D2C),
+    sidebarPrimary: Color(0xFF3A759B),
+    sidebarPrimaryForeground: Color(0xFFFFFFFF),
+    sidebarAccent: Color(0xFFDFE6ED),
+    sidebarAccentForeground: Color(0xFF121D2C),
+    sidebarBorder: Color(0x1F0D1520),
+    sidebarRing: Color(0xFF3A759B),
+    highestWins: Color(0x29D4A84B), // Slightly adjusted opacity for contrast against pure white cards
+    highestWinsForeground: Color(0xFFB58728), // Darkened amber so score numbers are highly readable
+    lowestWins: Color(0x295B9FD6), 
+    lowestWinsForeground: Color(0xFF2C71A8), // Darkened blue variant for clear text contrast
+  );
 
   static const AppColors darkThemeColors = AppColors(
     background: Color(0xFF0D1520),
@@ -61,12 +99,15 @@ class AppTheme {
   );
 }
 
-ThemeData buildThemeData(AppColors colors) {
+ThemeData buildThemeData(AppColors colors, ThemeType themeType) {
+  final Brightness brightness = themeType == ThemeType.light ? Brightness.light : Brightness.dark;
+  final schemeInit = themeType == ThemeType.light ? ColorScheme.light : ColorScheme.dark;
+
   return ThemeData(
     useMaterial3: true,
-    brightness: Brightness.dark,
+    brightness: brightness,
     scaffoldBackgroundColor: colors.background,
-    colorScheme: ColorScheme.dark(
+    colorScheme: schemeInit(
       surface: colors.background,
       onSurface: colors.foreground,
       surfaceContainer: colors.sidebar,
@@ -89,6 +130,7 @@ ThemeData buildThemeData(AppColors colors) {
       onTertiaryContainer: colors.sidebarAccentForeground,
       error: colors.destructive,
       onError: colors.destructiveForeground,
+      outline: colors.border,
     ),
     appBarTheme: AppBarTheme(
       backgroundColor: Colors.transparent,
@@ -257,6 +299,28 @@ ThemeData buildThemeData(AppColors colors) {
           color: colors.sidebarForeground,
           size: 24,
         );
+      }),
+    ),
+    switchTheme: SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith<Color?>((states) {
+        if (states.contains(WidgetState.selected)) {
+          return colors.accent;
+        }
+        return colors.foreground.withValues(alpha: 0.4);
+      }),
+      
+      trackColor: WidgetStateProperty.resolveWith<Color?>((states) {
+        if (states.contains(WidgetState.selected)) {
+          return colors.primary.withValues(alpha: 0.5);
+        }
+        return colors.switchBackground;
+      }),
+      
+      trackOutlineColor: WidgetStateProperty.resolveWith<Color?>((states) {
+        if (states.contains(WidgetState.selected)) {
+          return Colors.transparent; 
+        }
+        return colors.border;
       }),
     ),
   );

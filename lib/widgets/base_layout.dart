@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../screens/language_screen.dart';
-import '../theme/app_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../main.dart';
 
 class BaseLayout extends StatelessWidget {
   final Widget title;
@@ -118,6 +118,14 @@ class BaseLayout extends StatelessWidget {
                     builder: (context) => const LanguageScreen(),
                   ),
                 );
+              },
+            ),
+            SwitchListTile(
+              title: const Text('Dark Mode'),
+              secondary: Icon(darkThemeNotifier.value ? Icons.dark_mode : Icons.light_mode),
+              value: darkThemeNotifier.value,
+              onChanged: (bool newValue) async {
+                await changeTheme(newValue);
               },
             ),
           ],

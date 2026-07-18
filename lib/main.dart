@@ -8,6 +8,7 @@ import 'l10n/app_localizations.dart';
 import 'screens/game_list_screen.dart';
 
 final ValueNotifier<String> appLanguageNotifier = ValueNotifier('en');
+final ValueNotifier<bool> darkThemeNotifier = ValueNotifier(false);
 late Isar isar;
 
 void main() async {
@@ -24,6 +25,7 @@ void main() async {
 
   if (savedSettings != null) {
     appLanguageNotifier.value = savedSettings.languageCode;
+    darkThemeNotifier.value = savedSettings.isDarkMode;
   }
 
   runApp(const ScoreDenApp());
@@ -34,18 +36,19 @@ class ScoreDenApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<String>(
-      valueListenable: appLanguageNotifier,
-      builder: (context, currentLanguageCode, child) {
+    return AnimatedBuilder(
+      animation: Listenable.merge([appLanguageNotifier, darkThemeNotifier]),
+      builder: (context, child) {
         return MaterialApp(
           title: 'ScoreDen',
           debugShowCheckedModeBanner: false,
           home: const GameListScreen(),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          locale: Locale(currentLanguageCode),
-          themeMode: ThemeMode.dark,
-          theme: buildThemeData(AppTheme.darkThemeColors),
+          locale: Locale(appLanguageNotifier.value),
+          themeMode: darkThemeNotifier.value ? ThemeMode.dark : ThemeMode.light,
+          theme: buildThemeData(AppTheme.lightThemeColors, ThemeType.light),
+          darkTheme: buildThemeData(AppTheme.darkThemeColors, ThemeType.dark),
         );
       }
     );
@@ -60,6 +63,19 @@ Future<void> changeLanguage(String newLanguageCode) async {
     
     final settings = existingSettings ?? AppSettings();
     settings.languageCode = newLanguageCode;
+    
+    await isar.appSettings.put(settings); 
+  });
+}
+
+Future<void> changeTheme(bool isDark) async {
+  darkThemeNotifier.value = isDark;
+
+  await isar.writeTxn(() async {
+    final existingSettings = await isar.appSettings.where().findFirst();
+    
+    final settings = existingSettings ?? AppSettings();
+    settings.isDarkMode = isDark;
     
     await isar.appSettings.put(settings); 
   });

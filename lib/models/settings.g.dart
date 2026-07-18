@@ -17,8 +17,13 @@ const AppSettingsSchema = CollectionSchema(
   name: r'AppSettings',
   id: -5633561779022347008,
   properties: {
-    r'languageCode': PropertySchema(
+    r'isDarkMode': PropertySchema(
       id: 0,
+      name: r'isDarkMode',
+      type: IsarType.bool,
+    ),
+    r'languageCode': PropertySchema(
+      id: 1,
       name: r'languageCode',
       type: IsarType.string,
     )
@@ -53,7 +58,8 @@ void _appSettingsSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.languageCode);
+  writer.writeBool(offsets[0], object.isDarkMode);
+  writer.writeString(offsets[1], object.languageCode);
 }
 
 AppSettings _appSettingsDeserialize(
@@ -64,7 +70,8 @@ AppSettings _appSettingsDeserialize(
 ) {
   final object = AppSettings();
   object.id = id;
-  object.languageCode = reader.readString(offsets[0]);
+  object.isDarkMode = reader.readBool(offsets[0]);
+  object.languageCode = reader.readString(offsets[1]);
   return object;
 }
 
@@ -76,6 +83,8 @@ P _appSettingsDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
+      return (reader.readBool(offset)) as P;
+    case 1:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -229,6 +238,16 @@ extension AppSettingsQueryFilter
   }
 
   QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
+      isDarkModeEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isDarkMode',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
       languageCodeEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -373,6 +392,18 @@ extension AppSettingsQueryLinks
 
 extension AppSettingsQuerySortBy
     on QueryBuilder<AppSettings, AppSettings, QSortBy> {
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy> sortByIsDarkMode() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isDarkMode', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy> sortByIsDarkModeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isDarkMode', Sort.desc);
+    });
+  }
+
   QueryBuilder<AppSettings, AppSettings, QAfterSortBy> sortByLanguageCode() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'languageCode', Sort.asc);
@@ -401,6 +432,18 @@ extension AppSettingsQuerySortThenBy
     });
   }
 
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy> thenByIsDarkMode() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isDarkMode', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy> thenByIsDarkModeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isDarkMode', Sort.desc);
+    });
+  }
+
   QueryBuilder<AppSettings, AppSettings, QAfterSortBy> thenByLanguageCode() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'languageCode', Sort.asc);
@@ -417,6 +460,12 @@ extension AppSettingsQuerySortThenBy
 
 extension AppSettingsQueryWhereDistinct
     on QueryBuilder<AppSettings, AppSettings, QDistinct> {
+  QueryBuilder<AppSettings, AppSettings, QDistinct> distinctByIsDarkMode() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isDarkMode');
+    });
+  }
+
   QueryBuilder<AppSettings, AppSettings, QDistinct> distinctByLanguageCode(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -430,6 +479,12 @@ extension AppSettingsQueryProperty
   QueryBuilder<AppSettings, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<AppSettings, bool, QQueryOperations> isDarkModeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isDarkMode');
     });
   }
 

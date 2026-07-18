@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
 
 class StylizedCard extends StatelessWidget {
   final Widget child;
@@ -24,6 +23,10 @@ class StylizedCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primaryContainer, 
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline, // Dynamic theme border color
+          width: 1.0, // Thinline border thickness
+        ),
         boxShadow: [
           BoxShadow(
             // High opacity color that softens as it blurs outwards

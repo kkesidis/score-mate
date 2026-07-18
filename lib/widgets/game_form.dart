@@ -102,7 +102,7 @@ class _GameFormState extends State<GameForm> {
                     decoration: BoxDecoration(
                       color: highestWins
                         ? Theme.of(context).colorScheme.primaryFixed
-                        : const Color(0x12FFFFFF),
+                        : Theme.of(context).colorScheme.secondaryContainer,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(
@@ -113,7 +113,7 @@ class _GameFormState extends State<GameForm> {
                           size: 14,
                           color: highestWins
                             ? Theme.of(context).colorScheme.onPrimaryFixed
-                            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                            : Theme.of(context).colorScheme.onSecondaryContainer
                         ),
                         const SizedBox(width: 6),
                         Text(
@@ -123,7 +123,7 @@ class _GameFormState extends State<GameForm> {
                             fontWeight: FontWeight.w600,
                             color: highestWins
                               ? Theme.of(context).colorScheme.onPrimaryFixed
-                              : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                              : Theme.of(context).colorScheme.onSecondaryContainer
                           ),
                         ),
                       ],
@@ -148,7 +148,7 @@ class _GameFormState extends State<GameForm> {
                     decoration: BoxDecoration(
                       color: !highestWins
                         ? Theme.of(context).colorScheme.secondaryFixed
-                        : const Color(0x12FFFFFF),
+                        : Theme.of(context).colorScheme.secondaryContainer,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(
@@ -159,7 +159,7 @@ class _GameFormState extends State<GameForm> {
                           size: 14,
                           color: !highestWins
                             ? Theme.of(context).colorScheme.onSecondaryFixed
-                            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                            : Theme.of(context).colorScheme.onSecondaryContainer
                         ),
                         const SizedBox(width: 6),
                         Text(
@@ -169,7 +169,7 @@ class _GameFormState extends State<GameForm> {
                             fontWeight: FontWeight.w600,
                             color: !highestWins
                               ? Theme.of(context).colorScheme.onSecondaryFixed
-                              : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                              : Theme.of(context).colorScheme.onSecondaryContainer
                           ),
                         ),
                       ],

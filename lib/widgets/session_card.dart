@@ -111,7 +111,7 @@ class SessionCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: const Color(0x12FFFFFF), 
+                      color: Theme.of(context).colorScheme.secondaryContainer, 
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(
@@ -140,7 +140,7 @@ class SessionCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                              color: Theme.of(context).colorScheme.onSecondaryContainer,
                             ),
                           ),
                         ),
