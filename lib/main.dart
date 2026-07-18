@@ -182,11 +182,11 @@ class ScoreDenApp extends StatelessWidget {
             ),
             snackBarTheme: SnackBarThemeData(
               behavior: SnackBarBehavior.floating, 
-              backgroundColor: AppTheme.muted, // Dark background
-              actionTextColor: AppTheme.mutedForeground,      // Color for the action button text
+              backgroundColor: AppTheme.popover, // Dark background
+              actionTextColor: AppTheme.popoverForeground,      // Color for the action button text
               disabledActionTextColor: Colors.grey,
               contentTextStyle: const TextStyle(
-                color: AppTheme.mutedForeground,
+                color: AppTheme.popoverForeground,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
