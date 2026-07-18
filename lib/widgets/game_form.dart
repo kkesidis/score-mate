@@ -101,7 +101,7 @@ class _GameFormState extends State<GameForm> {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: highestWins
-                        ? AppTheme.highestWins
+                        ? Theme.of(context).colorScheme.primaryFixed
                         : const Color(0x12FFFFFF),
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -112,7 +112,7 @@ class _GameFormState extends State<GameForm> {
                           Icons.trending_up_rounded,
                           size: 14,
                           color: highestWins
-                            ? AppTheme.highestWinsForeground
+                            ? Theme.of(context).colorScheme.onPrimaryFixed
                             : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                         const SizedBox(width: 6),
@@ -122,7 +122,7 @@ class _GameFormState extends State<GameForm> {
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: highestWins
-                              ? AppTheme.highestWinsForeground
+                              ? Theme.of(context).colorScheme.onPrimaryFixed
                               : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
@@ -147,7 +147,7 @@ class _GameFormState extends State<GameForm> {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: !highestWins
-                        ? AppTheme.lowestWins
+                        ? Theme.of(context).colorScheme.secondaryFixed
                         : const Color(0x12FFFFFF),
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -158,7 +158,7 @@ class _GameFormState extends State<GameForm> {
                           Icons.trending_down_rounded,
                           size: 14,
                           color: !highestWins
-                            ? AppTheme.lowestWinsForeground
+                            ? Theme.of(context).colorScheme.onSecondaryFixed
                             : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                         const SizedBox(width: 6),
@@ -168,7 +168,7 @@ class _GameFormState extends State<GameForm> {
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: !highestWins
-                              ? AppTheme.lowestWinsForeground
+                              ? Theme.of(context).colorScheme.onSecondaryFixed
                               : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
@@ -194,8 +194,8 @@ class _GameFormState extends State<GameForm> {
               const SizedBox(width: 8),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  foregroundColor: AppTheme.primaryForeground,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 ),
                 onPressed: () async {
                   if (nameController.text.trim().isEmpty) return;

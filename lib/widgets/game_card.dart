@@ -50,8 +50,8 @@ class GameCard extends StatelessWidget {
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: game.highestScoreWins
-                          ? AppTheme.highestWins
-                          : AppTheme.lowestWins,
+                          ? Theme.of(context).colorScheme.primaryFixed
+                          : Theme.of(context).colorScheme.secondaryFixed,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
@@ -60,8 +60,8 @@ class GameCard extends StatelessWidget {
                           : Icons.trending_down_rounded,
                         size: 16,
                         color: game.highestScoreWins
-                          ? AppTheme.highestWinsForeground
-                          : AppTheme.lowestWinsForeground,
+                          ? Theme.of(context).colorScheme.onPrimaryFixed
+                          : Theme.of(context).colorScheme.onSecondaryFixed,
                       ),
                     ),
                   ),
@@ -113,9 +113,9 @@ class GameCard extends StatelessWidget {
                   },
                 ),
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.delete_outline,
-                    color: AppTheme.destructive,
+                    color: Theme.of(context).colorScheme.error,
                   ),
                   tooltip: l10n.deleteGame,
                   onPressed: () {

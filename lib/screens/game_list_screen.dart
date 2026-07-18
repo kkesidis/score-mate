@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import '../main.dart';
 import '../models/board_game.dart';
-import '../theme/app_theme.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/game_card.dart';
 import '../widgets/game_form.dart';
@@ -54,8 +53,8 @@ class _GameListScreenState extends State<GameListScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.destructive,
-                foregroundColor: AppTheme.destructiveForeground,
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
               ),
               onPressed: () {
                 _deleteGame(game.id); // Run the actual Isar delete code

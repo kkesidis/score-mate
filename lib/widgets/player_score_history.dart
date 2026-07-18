@@ -63,14 +63,14 @@ class PlayerScoreHistory extends StatelessWidget {
                   return ListTile(
                     leading: CircleAvatar(
                       backgroundColor: (entry.value ?? 0) >= 0
-                          ? AppTheme.secondary
-                          : AppTheme.destructive,
+                          ? Theme.of(context).colorScheme.secondary
+                          : Theme.of(context).colorScheme.error,
                       child: Text(
                         '#${reversedIndex + 1}',
                         style: TextStyle(
                           color: (entry.value ?? 0) >= 0
-                            ? AppTheme.secondaryForeground
-                            : AppTheme.destructiveForeground,
+                            ? Theme.of(context).colorScheme.onSecondary
+                            : Theme.of(context).colorScheme.onError,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -83,8 +83,8 @@ class PlayerScoreHistory extends StatelessWidget {
                     ),
                     subtitle: Text(
                       entry.description ?? AppLocalizations.of(context)!.notAvailable,
-                      style: const TextStyle(
-                        color: AppTheme.mutedForeground
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSecondaryContainer,
                       )
                     ),
                     trailing: Row(
@@ -92,9 +92,9 @@ class PlayerScoreHistory extends StatelessWidget {
                       children: [
                         // EDIT ENTRY BUTTON
                         IconButton(
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.edit_outlined,
-                            color: AppTheme.primary,
+                            color: Theme.of(context).colorScheme.primary,
                             size: 20,
                           ),
                           onPressed: () {
@@ -103,9 +103,9 @@ class PlayerScoreHistory extends StatelessWidget {
                         ),
                         // DELETE ENTRY BUTTON
                         IconButton(
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.delete_outline,
-                            color: AppTheme.destructive,
+                            color: Theme.of(context).colorScheme.error,
                             size: 20,
                           ),
                           onPressed: () {

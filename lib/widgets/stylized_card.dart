@@ -17,12 +17,12 @@ class StylizedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final finalShadowColor = shadowColor ?? AppTheme.primary;
+    final finalShadowColor = shadowColor ?? Theme.of(context).colorScheme.primary;
 
     return Container(
       margin: margin ?? const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
       decoration: BoxDecoration(
-        color: AppTheme.card, 
+        color: Theme.of(context).colorScheme.primaryContainer, 
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(

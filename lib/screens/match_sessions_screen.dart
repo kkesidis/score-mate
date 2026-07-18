@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../main.dart'; // Imports our global 'isar' instance
 import '../models/board_game.dart';
-import '../theme/app_theme.dart';
 import 'dart:async';
 import '../l10n/app_localizations.dart';
 import '../widgets/session_card.dart';
@@ -124,8 +123,8 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.destructive,
-                foregroundColor: AppTheme.destructiveForeground,
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
               ),
               onPressed: () {
                 _deleteSession(actualIndex);

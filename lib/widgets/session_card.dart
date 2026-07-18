@@ -128,8 +128,8 @@ class SessionCard extends StatelessWidget {
                             children: [
                               TextSpan(
                                 text: '${sessionPlayers.length} ',
-                                style: const TextStyle(
-                                  color: AppTheme.primary,
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -151,8 +151,8 @@ class SessionCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       color: game.highestScoreWins
-                          ? AppTheme.highestWins
-                          : AppTheme.lowestWins,
+                          ? Theme.of(context).colorScheme.primaryFixed
+                          : Theme.of(context).colorScheme.secondaryFixed,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Wrap(
@@ -166,8 +166,8 @@ class SessionCard extends StatelessWidget {
                             : Icons.trending_down_rounded,
                           size: 14,
                           color: game.highestScoreWins
-                            ? AppTheme.highestWinsForeground
-                            : AppTheme.lowestWinsForeground,
+                            ? Theme.of(context).colorScheme.onPrimaryFixed
+                            : Theme.of(context).colorScheme.onSecondaryFixed,
                         ),
                         Text(
                           winnerText,
@@ -175,8 +175,8 @@ class SessionCard extends StatelessWidget {
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                             color: game.highestScoreWins
-                              ? AppTheme.highestWinsForeground
-                              : AppTheme.lowestWinsForeground,
+                              ? Theme.of(context).colorScheme.onPrimaryFixed
+                              : Theme.of(context).colorScheme.onSecondaryFixed,
                           ),
                         ),
                       ],
@@ -199,9 +199,9 @@ class SessionCard extends StatelessWidget {
                   },
                 ),
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.delete_outline,
-                    color: AppTheme.destructive,
+                    color: Theme.of(context).colorScheme.error,
                   ),
                   tooltip: AppLocalizations.of(context)!.deleteSession,
                   onPressed: () {

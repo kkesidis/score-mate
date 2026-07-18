@@ -130,9 +130,9 @@ class PlayerCard extends StatelessWidget {
                   },
                 ),
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.delete_outline,
-                    color: AppTheme.destructive,
+                    color: Theme.of(context).colorScheme.error
                   ),
                   tooltip: l10n.removePlayer,
                   onPressed: () {

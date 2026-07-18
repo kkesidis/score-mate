@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
 import '../models/board_game.dart';
-import '../theme/app_theme.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/player_card.dart';
 import '../widgets/player_score_history.dart';
@@ -183,8 +182,8 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.destructive,
-                foregroundColor: AppTheme.destructiveForeground,
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
               ),
               onPressed: () {
                 _deletePlayer(actualIndex);

@@ -59,10 +59,10 @@ class _SessionFormState extends State<SessionForm> {
         children: [
           Text(
             isEditing ? l10n.renameSession : l10n.newSession,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: AppTheme.accent,
+              color: Theme.of(context).colorScheme.tertiary,
             ),
           ),
 
@@ -96,8 +96,8 @@ class _SessionFormState extends State<SessionForm> {
               const SizedBox(width: 8),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  foregroundColor: AppTheme.primaryForeground,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 ),
                 onPressed: () async {
                   final textInput = nameController.text.trim();
