@@ -45,7 +45,7 @@ class ScoreDenApp extends StatelessWidget {
           supportedLocales: AppLocalizations.supportedLocales,
           locale: Locale(currentLanguageCode),
           themeMode: ThemeMode.dark,
-          darkTheme: ThemeData(
+          theme: ThemeData(
             useMaterial3: true,
             brightness: Brightness.dark,
             scaffoldBackgroundColor: AppTheme.background,
