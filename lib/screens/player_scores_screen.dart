@@ -7,6 +7,7 @@ import '../widgets/player_score_history.dart';
 import '../widgets/player_form.dart';
 import '../widgets/score_form.dart';
 import '../widgets/base_layout.dart';
+import '../widgets/empty_state_card.dart';
 
 class PlayerScoresScreen extends StatefulWidget {
   final int gameId;
@@ -428,7 +429,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
           )
       ],
       child: indexedPlayers.isEmpty
-        ? Center(child: Text(AppLocalizations.of(context)!.noPlayersAddedYet),)
+        ? EmptyStateCard(child: Text(AppLocalizations.of(context)!.noPlayersAddedYet))
         : ListView.builder(
             itemCount: indexedPlayers.length,
             itemBuilder: (context, index) {

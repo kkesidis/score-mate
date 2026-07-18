@@ -7,6 +7,7 @@ import '../widgets/session_card.dart';
 import '../widgets/session_form.dart';
 import 'player_scores_screen.dart';
 import '../widgets/base_layout.dart';
+import '../widgets/empty_state_card.dart';
 
 class MatchSessionsScreen extends StatefulWidget {
   final int gameId;
@@ -185,7 +186,7 @@ class _MatchSessionsScreenState extends State<MatchSessionsScreen> {
         child: const Icon(Icons.add),
       ),
       child: sessions.isEmpty
-        ? Center(child: Text(AppLocalizations.of(context)!.noSessionsYet))
+        ? EmptyStateCard(child: Text(AppLocalizations.of(context)!.noSessionsYet))
         : ListView.builder(
           itemCount: sessions.length,
           itemBuilder: (context, index) {

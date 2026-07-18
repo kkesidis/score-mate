@@ -7,6 +7,7 @@ import '../widgets/game_card.dart';
 import '../widgets/game_form.dart';
 import 'match_sessions_screen.dart';
 import '../widgets/base_layout.dart';
+import '../widgets/empty_state_card.dart';
 
 class GameListScreen extends StatefulWidget {
   const GameListScreen({super.key});
@@ -131,7 +132,7 @@ class _GameListScreenState extends State<GameListScreen> {
         child: const Icon(Icons.add),
       ),
       child: sortedGames.isEmpty
-        ? Center(child: Text(AppLocalizations.of(context)!.noGamesYet))
+        ? EmptyStateCard(child: Text(AppLocalizations.of(context)!.noGamesYet))
         : ListView.builder(
             itemCount: sortedGames.length,
             itemBuilder: (context, index) {
