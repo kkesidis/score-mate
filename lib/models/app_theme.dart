@@ -44,18 +44,24 @@ class AppTheme {
   static final BorderRadius radius = BorderRadius.circular(radiusValue);
 
   // Specialized Color Palettes
-  static const Color color1 = Color(0xFF5B9FD6);
-  static const Color color2 = Color(0xFF4BBFB8);
-  static const Color color3 = Color(0xFF7B8FC4);
-  static const Color color4 = Color(0xFFC47A5B);
-  static const Color color5 = Color(0xFF6AAB7C);
-
   static const List<Color> palette = [
-    color1,
-    color2,
-    color3,
-    color4,
-    color5,
+    Color(0xFFFF6467),
+    Color(0xFFFF8904),
+    Color(0xFFFFBA00),
+    Color(0xFFFCC800),
+    Color(0xFF9AE600),
+    Color(0xFF05DF72),
+    Color(0xFF00D492),
+    Color(0xFF00D5BE),
+    Color(0xFF00D3F2),
+    Color(0xFF00BCFF),
+    Color(0xFF51A2FF),
+    Color(0xFF7C86FF),
+    Color(0xFFA684FF),
+    Color(0xFFC27AFF),
+    Color(0xFFED6AFF),
+    Color(0xFFFB64B6),
+    Color(0xFFFF637E),
   ];
 
   // Sidebar Layout Theme Profile
