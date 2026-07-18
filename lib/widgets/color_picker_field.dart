@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/app_theme.dart'; // Import your colors file
+import '../theme/app_theme.dart'; // Import your colors file
 import '../l10n/app_localizations.dart';
 
 class ColorPickerField extends StatefulWidget {
@@ -59,19 +59,19 @@ class _ColorPickerFieldState extends State<ColorPickerField> {
                       color: color,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isSelected ? AppTheme.background : Colors.transparent,
+                        color: isSelected ? Theme.of(context).colorScheme.surface : Colors.transparent,
                         width: 3,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: AppTheme.background.withValues(alpha: 0.1),
+                          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.1),
                           blurRadius: 4,
                           offset: const Offset(0, 2),
                         ),
                       ],
                     ),
                     child: isSelected
-                        ? const Icon(Icons.check, color: AppTheme.foreground, size: 24)
+                        ? Icon(Icons.check, color: Theme.of(context).colorScheme.onSurface, size: 24)
                         : null,
                   ),
                 )

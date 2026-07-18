@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/board_game.dart';
-import '../models/app_theme.dart';
 import '../l10n/app_localizations.dart';
 
 class SessionForm extends StatefulWidget {
@@ -62,7 +61,6 @@ class _SessionFormState extends State<SessionForm> {
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: AppTheme.accent,
             ),
           ),
 
@@ -96,8 +94,8 @@ class _SessionFormState extends State<SessionForm> {
               const SizedBox(width: 8),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  foregroundColor: AppTheme.primaryForeground,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 ),
                 onPressed: () async {
                   final textInput = nameController.text.trim();

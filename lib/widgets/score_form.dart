@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/board_game.dart';
-import '../models/app_theme.dart';
 import '../l10n/app_localizations.dart';
 
 enum ScoreOp { add, subtract }
@@ -67,15 +66,15 @@ class _ScoreFormState extends State<ScoreForm> {
             fontWeight: FontWeight.bold,
             // Switches typography colors depending on the operational math state
             color: isAdd 
-                ? AppTheme.secondaryForeground 
-                : AppTheme.destructiveForeground,
+                ? Theme.of(context).colorScheme.onSecondary 
+                : Theme.of(context).colorScheme.onError,
           ),
         ),
       ),
       // Solid structural background injection based on the operation type
       backgroundColor: isAdd 
-          ? AppTheme.secondary 
-          : AppTheme.destructive,
+          ? Theme.of(context).colorScheme.secondary
+          : Theme.of(context).colorScheme.error,
       // We completely strip the border side tinting line since we are using solid fills
       side: BorderSide.none, 
       onPressed: () {
@@ -179,8 +178,8 @@ class _ScoreFormState extends State<ScoreForm> {
               prefixIcon: Icon(
                 currentOp == ScoreOp.add ? Icons.add : Icons.remove,
                 color: currentOp == ScoreOp.add
-                    ? AppTheme.accent
-                    : AppTheme.destructive,
+                    ? Theme.of(context).colorScheme.tertiary
+                    : Theme.of(context).colorScheme.error,
               ),
             ),
             keyboardType: TextInputType.number,
@@ -241,8 +240,8 @@ class _ScoreFormState extends State<ScoreForm> {
               const SizedBox(width: 8),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  foregroundColor: AppTheme.primaryForeground,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 ),
                 onPressed: () async {
                   final score = scoreController.text.trim();

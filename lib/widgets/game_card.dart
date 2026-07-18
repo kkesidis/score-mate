@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/board_game.dart';
-import '../models/app_theme.dart';
+import '../theme/app_theme.dart';
 import './stylized_card.dart';
 import '../l10n/app_localizations.dart';
 
@@ -50,8 +50,8 @@ class GameCard extends StatelessWidget {
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: game.highestScoreWins
-                          ? AppTheme.highestWins
-                          : AppTheme.lowestWins,
+                          ? Theme.of(context).colorScheme.primaryFixed
+                          : Theme.of(context).colorScheme.secondaryFixed,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
@@ -60,8 +60,8 @@ class GameCard extends StatelessWidget {
                           : Icons.trending_down_rounded,
                         size: 16,
                         color: game.highestScoreWins
-                          ? AppTheme.highestWinsForeground
-                          : AppTheme.lowestWinsForeground,
+                          ? Theme.of(context).colorScheme.onPrimaryFixed
+                          : Theme.of(context).colorScheme.onSecondaryFixed,
                       ),
                     ),
                   ),
@@ -69,7 +69,7 @@ class GameCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: const Color(0x12FFFFFF), 
+                      color: Theme.of(context).colorScheme.secondaryContainer, 
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Text.rich(
@@ -84,13 +84,13 @@ class GameCard extends StatelessWidget {
                           ),
                           TextSpan(
                             text: l10n.sessions,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                            style: const TextStyle(
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
-                        style: const TextStyle(
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSecondaryContainer,
                           fontSize: 12,
                         ),
                       ),
@@ -113,9 +113,9 @@ class GameCard extends StatelessWidget {
                   },
                 ),
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.delete_outline,
-                    color: AppTheme.destructive,
+                    color: Theme.of(context).colorScheme.error,
                   ),
                   tooltip: l10n.deleteGame,
                   onPressed: () {

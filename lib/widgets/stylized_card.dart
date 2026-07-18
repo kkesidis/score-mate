@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../models/app_theme.dart';
 
 class StylizedCard extends StatelessWidget {
   final Widget child;
@@ -17,13 +16,17 @@ class StylizedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final finalShadowColor = shadowColor ?? AppTheme.primary;
+    final finalShadowColor = shadowColor ?? Theme.of(context).colorScheme.primary;
 
     return Container(
       margin: margin ?? const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
       decoration: BoxDecoration(
-        color: AppTheme.card, 
+        color: Theme.of(context).colorScheme.primaryContainer, 
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline, // Dynamic theme border color
+          width: 1.0, // Thinline border thickness
+        ),
         boxShadow: [
           BoxShadow(
             // High opacity color that softens as it blurs outwards

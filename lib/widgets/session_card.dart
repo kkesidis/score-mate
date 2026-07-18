@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/board_game.dart';
-import '../models/app_theme.dart';
+import '../theme/app_theme.dart';
 import './stylized_card.dart';
 import '../l10n/app_localizations.dart';
 
@@ -111,7 +111,7 @@ class SessionCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: const Color(0x12FFFFFF), 
+                      color: Theme.of(context).colorScheme.secondaryContainer, 
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(
@@ -128,8 +128,8 @@ class SessionCard extends StatelessWidget {
                             children: [
                               TextSpan(
                                 text: '${sessionPlayers.length} ',
-                                style: const TextStyle(
-                                  color: AppTheme.primary,
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -140,7 +140,7 @@ class SessionCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                              color: Theme.of(context).colorScheme.onSecondaryContainer,
                             ),
                           ),
                         ),
@@ -151,8 +151,8 @@ class SessionCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       color: game.highestScoreWins
-                          ? AppTheme.highestWins
-                          : AppTheme.lowestWins,
+                          ? Theme.of(context).colorScheme.primaryFixed
+                          : Theme.of(context).colorScheme.secondaryFixed,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Wrap(
@@ -166,8 +166,8 @@ class SessionCard extends StatelessWidget {
                             : Icons.trending_down_rounded,
                           size: 14,
                           color: game.highestScoreWins
-                            ? AppTheme.highestWinsForeground
-                            : AppTheme.lowestWinsForeground,
+                            ? Theme.of(context).colorScheme.onPrimaryFixed
+                            : Theme.of(context).colorScheme.onSecondaryFixed,
                         ),
                         Text(
                           winnerText,
@@ -175,8 +175,8 @@ class SessionCard extends StatelessWidget {
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                             color: game.highestScoreWins
-                              ? AppTheme.highestWinsForeground
-                              : AppTheme.lowestWinsForeground,
+                              ? Theme.of(context).colorScheme.onPrimaryFixed
+                              : Theme.of(context).colorScheme.onSecondaryFixed,
                           ),
                         ),
                       ],
@@ -199,9 +199,9 @@ class SessionCard extends StatelessWidget {
                   },
                 ),
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.delete_outline,
-                    color: AppTheme.destructive,
+                    color: Theme.of(context).colorScheme.error,
                   ),
                   tooltip: AppLocalizations.of(context)!.deleteSession,
                   onPressed: () {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/board_game.dart';
-import '../models/app_theme.dart';
+import '../theme/app_theme.dart';
 import './stylized_card.dart';
 import '../l10n/app_localizations.dart';
 
@@ -67,7 +67,7 @@ class PlayerCard extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       // Standard translucent chip background: rgba(255, 255, 255, 0.07)
-                      color: const Color(0x12FFFFFF), 
+                      color: Theme.of(context).colorScheme.secondaryContainer, 
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(
@@ -96,7 +96,7 @@ class PlayerCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                              color: Theme.of(context).colorScheme.onSecondaryContainer,
                             ),
                           ),
                         ),
@@ -130,9 +130,9 @@ class PlayerCard extends StatelessWidget {
                   },
                 ),
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.delete_outline,
-                    color: AppTheme.destructive,
+                    color: Theme.of(context).colorScheme.error
                   ),
                   tooltip: l10n.removePlayer,
                   onPressed: () {

@@ -9,4 +9,7 @@ class AppSettings {
 
   // Store the language code here (e.g., "en" or "el")
   String languageCode = 'en'; 
+
+  // Store the dark mode toggle
+  bool isDarkMode = false;
 }

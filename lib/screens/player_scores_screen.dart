@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
 import '../models/board_game.dart';
-import '../models/app_theme.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/player_card.dart';
 import '../widgets/player_score_history.dart';
 import '../widgets/player_form.dart';
 import '../widgets/score_form.dart';
 import '../widgets/base_layout.dart';
+import '../widgets/empty_state_card.dart';
 
 class PlayerScoresScreen extends StatefulWidget {
   final int gameId;
@@ -183,8 +183,8 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.destructive,
-                foregroundColor: AppTheme.destructiveForeground,
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
               ),
               onPressed: () {
                 _deletePlayer(actualIndex);
@@ -429,7 +429,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
           )
       ],
       child: indexedPlayers.isEmpty
-        ? Center(child: Text(AppLocalizations.of(context)!.noPlayersAddedYet),)
+        ? EmptyStateCard(child: Text(AppLocalizations.of(context)!.noPlayersAddedYet))
         : ListView.builder(
             itemCount: indexedPlayers.length,
             itemBuilder: (context, index) {

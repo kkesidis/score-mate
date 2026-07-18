@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../screens/language_screen.dart';
-import '../models/app_theme.dart';
 import '../l10n/app_localizations.dart';
+import '../main.dart';
 
 class BaseLayout extends StatelessWidget {
   final Widget title;
@@ -56,8 +56,8 @@ class BaseLayout extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    AppTheme.sidebarAccent,
-                    AppTheme.sidebarAccent.withValues(alpha: 0.8),
+                    Theme.of(context).colorScheme.tertiaryContainer,
+                    Theme.of(context).colorScheme.tertiaryContainer.withValues(alpha: 0.8),
                   ],
                 ),
                 borderRadius: const BorderRadius.only(
@@ -68,13 +68,13 @@ class BaseLayout extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
+                  Text(
                     'ScoreDen',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.5,
-                      color: AppTheme.sidebarAccentForeground,
+                      color: Theme.of(context).colorScheme.onTertiaryContainer
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -82,7 +82,7 @@ class BaseLayout extends StatelessWidget {
                     'Board Game Score Tracker',
                     style: TextStyle(
                       fontWeight: FontWeight.w400,
-                      color: AppTheme.sidebarAccentForeground.withValues(alpha: 0.7),
+                      color: Theme.of(context).colorScheme.onTertiaryContainer.withValues(alpha: 0.7),
                     ),
                   ),
                 ],
@@ -118,6 +118,14 @@ class BaseLayout extends StatelessWidget {
                     builder: (context) => const LanguageScreen(),
                   ),
                 );
+              },
+            ),
+            SwitchListTile(
+              title: const Text('Dark Mode'),
+              secondary: Icon(darkThemeNotifier.value ? Icons.dark_mode : Icons.light_mode),
+              value: darkThemeNotifier.value,
+              onChanged: (bool newValue) async {
+                await changeTheme(newValue);
               },
             ),
           ],

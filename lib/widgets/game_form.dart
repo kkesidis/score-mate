@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/board_game.dart';
-import '../models/app_theme.dart';
+import '../theme/app_theme.dart';
 import '../l10n/app_localizations.dart';
 import './color_picker_field.dart';
 
@@ -101,8 +101,8 @@ class _GameFormState extends State<GameForm> {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: highestWins
-                        ? AppTheme.highestWins
-                        : const Color(0x12FFFFFF),
+                        ? Theme.of(context).colorScheme.primaryFixed
+                        : Theme.of(context).colorScheme.secondaryContainer,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(
@@ -112,8 +112,8 @@ class _GameFormState extends State<GameForm> {
                           Icons.trending_up_rounded,
                           size: 14,
                           color: highestWins
-                            ? AppTheme.highestWinsForeground
-                            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                            ? Theme.of(context).colorScheme.onPrimaryFixed
+                            : Theme.of(context).colorScheme.onSecondaryContainer
                         ),
                         const SizedBox(width: 6),
                         Text(
@@ -122,8 +122,8 @@ class _GameFormState extends State<GameForm> {
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: highestWins
-                              ? AppTheme.highestWinsForeground
-                              : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                              ? Theme.of(context).colorScheme.onPrimaryFixed
+                              : Theme.of(context).colorScheme.onSecondaryContainer
                           ),
                         ),
                       ],
@@ -147,8 +147,8 @@ class _GameFormState extends State<GameForm> {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: !highestWins
-                        ? AppTheme.lowestWins
-                        : const Color(0x12FFFFFF),
+                        ? Theme.of(context).colorScheme.secondaryFixed
+                        : Theme.of(context).colorScheme.secondaryContainer,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(
@@ -158,8 +158,8 @@ class _GameFormState extends State<GameForm> {
                           Icons.trending_down_rounded,
                           size: 14,
                           color: !highestWins
-                            ? AppTheme.lowestWinsForeground
-                            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                            ? Theme.of(context).colorScheme.onSecondaryFixed
+                            : Theme.of(context).colorScheme.onSecondaryContainer
                         ),
                         const SizedBox(width: 6),
                         Text(
@@ -168,8 +168,8 @@ class _GameFormState extends State<GameForm> {
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: !highestWins
-                              ? AppTheme.lowestWinsForeground
-                              : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                              ? Theme.of(context).colorScheme.onSecondaryFixed
+                              : Theme.of(context).colorScheme.onSecondaryContainer
                           ),
                         ),
                       ],
@@ -194,8 +194,8 @@ class _GameFormState extends State<GameForm> {
               const SizedBox(width: 8),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primary,
-                  foregroundColor: AppTheme.primaryForeground,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                 ),
                 onPressed: () async {
                   if (nameController.text.trim().isEmpty) return;
