@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/board_game.dart';
-import '../theme/app_theme.dart';
 import '../l10n/app_localizations.dart';
 
 class SessionForm extends StatefulWidget {
@@ -59,10 +58,9 @@ class _SessionFormState extends State<SessionForm> {
         children: [
           Text(
             isEditing ? l10n.renameSession : l10n.newSession,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.tertiary,
             ),
           ),
 
