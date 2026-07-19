@@ -76,5 +76,6 @@
   "whoWins": "Who wins?",
   "theme": "Theme",
   "light": "Light",
-  "dark": "Dark"
+  "dark": "Dark",
+  "boardGameScoreTracker": "Board Game Score Tracker"
 }

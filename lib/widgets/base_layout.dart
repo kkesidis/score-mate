@@ -79,7 +79,7 @@ class BaseLayout extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Board Game Score Tracker',
+                    AppLocalizations.of(context)!.boardGameScoreTracker,
                     style: TextStyle(
                       fontWeight: FontWeight.w400,
                       color: Theme.of(context).colorScheme.onTertiaryContainer.withValues(alpha: 0.7),

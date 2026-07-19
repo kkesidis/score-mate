@@ -258,4 +258,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dark => 'Dark';
+
+  @override
+  String get boardGameScoreTracker => 'Board Game Score Tracker';
 }

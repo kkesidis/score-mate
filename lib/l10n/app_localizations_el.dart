@@ -261,4 +261,7 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get dark => 'Σκοτεινό';
+
+  @override
+  String get boardGameScoreTracker => 'Μετρητής σκορ επιτραπέζιων παιχνιδιών';
 }

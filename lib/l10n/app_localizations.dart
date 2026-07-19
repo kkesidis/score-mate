@@ -559,6 +559,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark'**
   String get dark;
+
+  /// No description provided for @boardGameScoreTracker.
+  ///
+  /// In en, this message translates to:
+  /// **'Board Game Score Tracker'**
+  String get boardGameScoreTracker;
 }
 
 class _AppLocalizationsDelegate
