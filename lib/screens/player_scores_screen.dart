@@ -203,8 +203,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
     final sessionsList = _game!.sessions.toList();
     final currentMatchSession = sessionsList[widget.sessionIndex];
-    final playersList = (currentMatchSession.players ?? <PlayerSession>[])
-        .toList();
+    final playersList = currentMatchSession.players.toList();
 
     playersList.removeAt(playerIndexInList);
 
@@ -231,6 +230,9 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       context: context,
       isScrollControlled: true, // Allows the sheet to resize when keyboards push up
       useRootNavigator: true,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.7, // 70% of screen height
+      ),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -279,7 +281,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
     final sessionsList = _game!.sessions.toList();
     final currentMatch = sessionsList[widget.sessionIndex];
-    final playersList = (currentMatch.players ?? <PlayerSession>[]).toList();
+    final playersList = currentMatch.players.toList();
 
     final targetPlayer = playersList[playerIdx];
     final updatedScores = targetPlayer.scores.toList();
@@ -370,7 +372,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
     }
 
     final currentMatchSession = _game!.sessions[widget.sessionIndex];
-    final basePlayers = currentMatchSession.players ?? <PlayerSession>[];
+    final basePlayers = currentMatchSession.players;
     final sessionName = currentMatchSession.name?.isEmpty ?? true ? AppLocalizations.of(context)!.indexedSession(widget.sessionIndex + 1) : currentMatchSession.name!;
     int? topPlayerIndex;
 
@@ -380,9 +382,9 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
         .toList();
 
     if (indexedPlayers.isNotEmpty) {
-      final MapEntry<int, PlayerSession> topPlayerEntry = indexedPlayers.reduce((currentMax, next) {
-        return next.value.totalScore > currentMax.value.totalScore ? next : currentMax;
-      });
+      final MapEntry<int, PlayerSession> topPlayerEntry = _game!.highestScoreWins
+        ? indexedPlayers.reduce((currentMax, next) => next.value.totalScore > currentMax.value.totalScore ? next : currentMax)
+        : indexedPlayers.reduce((currentMin, next) => next.value.totalScore < currentMin.value.totalScore ? next : currentMin);
 
       topPlayerIndex = topPlayerEntry.key;
     }

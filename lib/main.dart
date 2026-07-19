@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:device_preview/device_preview.dart';
+import 'package:flutter/foundation.dart';
 import 'models/board_game.dart';
 import 'theme/app_theme.dart';
 import 'models/settings.dart';
@@ -28,7 +30,12 @@ void main() async {
     darkThemeNotifier.value = savedSettings.isDarkMode;
   }
 
-  runApp(const ScoreDenApp());
+  runApp(
+    DevicePreview(
+      enabled: !kReleaseMode, // Only enables in debug/profile mode, not production!
+      builder: (context) => const ScoreDenApp(), 
+    ),
+  );
 }
 
 class ScoreDenApp extends StatelessWidget {
