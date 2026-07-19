@@ -65,13 +65,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gameDescriptionHint => 'Short description of the game..';
 
   @override
-  String get highestWins => 'Highest Wins';
+  String get highestWins => 'Highest score';
 
   @override
   String get highestScoretWins => 'Highest score wins';
 
   @override
-  String get lowestWins => 'Lowest Wins';
+  String get lowestWins => 'Lowest score';
 
   @override
   String get lowestScoretWins => 'Lowest score wins';
@@ -246,4 +246,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sessionOptions => 'Session options';
+
+  @override
+  String get whoWins => 'Who wins?';
 }

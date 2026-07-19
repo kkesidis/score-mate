@@ -18,9 +18,9 @@
   "gameNameHint": "π.χ. Ticket to Ride",
   "gameDescriptionLabel": "Περιγραφή",
   "gameDescriptionHint": "Σύντομη περιγραφή του παιχνιδιού...",
-  "highestWins": "Υψηλότερο σκορ κερδίζει",
+  "highestWins": "Υψηλότερο σκορ",
   "highestScoretWins": "Νικητής με το υψηλότερο σκορ",
-  "lowestWins": "Χαμηλότερο σκορ κερδίζει",
+  "lowestWins": "Χαμηλότερο σκορ",
   "lowestScoretWins": "Νικητής με το χαμηλότερο σκορ",
   "gamesTracked": "Καταγράφηκαν {number} παιχνίδια",
   "noGamesYet": "Δεν έχουν προστεθεί παιχνίδια ακόμα. Πατήστε το + για να ξεκινήσετε!",
@@ -72,5 +72,6 @@
   "notAvailable": "-",
   "couldNotFindGame": "Δεν βρέθηκε το παιχνίδι",
   "chooseColor": "Επιλέξτε χρώμα",
-  "sessionOptions": "Ρυθμίσεις παρτίδας"
+  "sessionOptions": "Ρυθμίσεις παρτίδας",
+  "whoWins": "Ποιός κερδίζει;"
 }

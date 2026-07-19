@@ -86,98 +86,107 @@ class _GameFormState extends State<GameForm> {
 
           const SizedBox(height: 15),
 
-          Row(
-            children: [
-              Expanded(
-                child: InkWell(
-                  onTap: () {
-                    setState(() {
-                      highestWins = true;
-                    });
-                  },
-                  borderRadius: BorderRadius.circular(16),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: highestWins
-                        ? Theme.of(context).colorScheme.primaryFixed
-                        : Theme.of(context).colorScheme.secondaryContainer,
+          InputDecorator(
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)!.whoWins, // The decorator handles the label alignment perfectly
+              border: const OutlineInputBorder(),   // Draws the exact same border box as your text field
+            ),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8.0), // Adds a tiny gap below the label line
+              child: Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          highestWins = true;
+                        });
+                      },
                       borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.trending_up_rounded,
-                          size: 14,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
                           color: highestWins
-                            ? Theme.of(context).colorScheme.onPrimaryFixed
-                            : Theme.of(context).colorScheme.onSecondaryContainer
+                            ? Theme.of(context).colorScheme.primaryFixed
+                            : Theme.of(context).colorScheme.secondaryContainer,
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        const SizedBox(width: 6),
-                        Text(
-                          l10n.highestWins,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: highestWins
-                              ? Theme.of(context).colorScheme.onPrimaryFixed
-                              : Theme.of(context).colorScheme.onSecondaryContainer
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.trending_up_rounded,
+                              size: 14,
+                              color: highestWins
+                                ? Theme.of(context).colorScheme.onPrimaryFixed
+                                : Theme.of(context).colorScheme.onSecondaryContainer
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              l10n.highestWins,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: highestWins
+                                  ? Theme.of(context).colorScheme.onPrimaryFixed
+                                  : Theme.of(context).colorScheme.onSecondaryContainer
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-              ),
-              
-              const SizedBox(width: 8),
-              
-              Expanded(
-                child: InkWell(
-                  onTap: () {
-                    setState(() {
-                      highestWins = false;
-                    });
-                  },
-                  borderRadius: BorderRadius.circular(16),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: !highestWins
-                        ? Theme.of(context).colorScheme.secondaryFixed
-                        : Theme.of(context).colorScheme.secondaryContainer,
+                  
+                  const SizedBox(width: 8),
+                  
+                  Expanded(
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          highestWins = false;
+                        });
+                      },
                       borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.trending_down_rounded,
-                          size: 14,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
                           color: !highestWins
-                            ? Theme.of(context).colorScheme.onSecondaryFixed
-                            : Theme.of(context).colorScheme.onSecondaryContainer
+                            ? Theme.of(context).colorScheme.secondaryFixed
+                            : Theme.of(context).colorScheme.secondaryContainer,
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        const SizedBox(width: 6),
-                        Text(
-                          l10n.lowestWins,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: !highestWins
-                              ? Theme.of(context).colorScheme.onSecondaryFixed
-                              : Theme.of(context).colorScheme.onSecondaryContainer
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.trending_down_rounded,
+                              size: 14,
+                              color: !highestWins
+                                ? Theme.of(context).colorScheme.onSecondaryFixed
+                                : Theme.of(context).colorScheme.onSecondaryContainer
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              l10n.lowestWins,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: !highestWins
+                                  ? Theme.of(context).colorScheme.onSecondaryFixed
+                                  : Theme.of(context).colorScheme.onSecondaryContainer
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
 
           const SizedBox(height: 24),

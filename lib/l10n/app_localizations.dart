@@ -209,7 +209,7 @@ abstract class AppLocalizations {
   /// No description provided for @highestWins.
   ///
   /// In en, this message translates to:
-  /// **'Highest Wins'**
+  /// **'Highest score'**
   String get highestWins;
 
   /// No description provided for @highestScoretWins.
@@ -221,7 +221,7 @@ abstract class AppLocalizations {
   /// No description provided for @lowestWins.
   ///
   /// In en, this message translates to:
-  /// **'Lowest Wins'**
+  /// **'Lowest score'**
   String get lowestWins;
 
   /// No description provided for @lowestScoretWins.
@@ -535,6 +535,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Session options'**
   String get sessionOptions;
+
+  /// No description provided for @whoWins.
+  ///
+  /// In en, this message translates to:
+  /// **'Who wins?'**
+  String get whoWins;
 }
 
 class _AppLocalizationsDelegate

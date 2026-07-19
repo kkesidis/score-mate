@@ -65,13 +65,13 @@ class AppLocalizationsEl extends AppLocalizations {
   String get gameDescriptionHint => 'Σύντομη περιγραφή του παιχνιδιού...';
 
   @override
-  String get highestWins => 'Υψηλότερο σκορ κερδίζει';
+  String get highestWins => 'Υψηλότερο σκορ';
 
   @override
   String get highestScoretWins => 'Νικητής με το υψηλότερο σκορ';
 
   @override
-  String get lowestWins => 'Χαμηλότερο σκορ κερδίζει';
+  String get lowestWins => 'Χαμηλότερο σκορ';
 
   @override
   String get lowestScoretWins => 'Νικητής με το χαμηλότερο σκορ';
@@ -249,4 +249,7 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get sessionOptions => 'Ρυθμίσεις παρτίδας';
+
+  @override
+  String get whoWins => 'Ποιός κερδίζει;';
 }

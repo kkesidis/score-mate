@@ -18,9 +18,9 @@
   "gameNameHint": "e.g. Ticket to Ride",
   "gameDescriptionLabel": "Description",
   "gameDescriptionHint": "Short description of the game..",
-  "highestWins": "Highest Wins",
+  "highestWins": "Highest score",
   "highestScoretWins": "Highest score wins",
-  "lowestWins": "Lowest Wins",
+  "lowestWins": "Lowest score",
   "lowestScoretWins": "Lowest score wins",
   "gamesTracked": "{number} games tracked",
   "noGamesYet": "No games added yet. Tap + to begin!",
@@ -72,5 +72,6 @@
   "notAvailable": "-",
   "couldNotFindGame": "",
   "chooseColor": "Choose color",
-  "sessionOptions": "Session options"
+  "sessionOptions": "Session options",
+  "whoWins": "Who wins?"
 }
