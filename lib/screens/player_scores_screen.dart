@@ -203,8 +203,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
     final sessionsList = _game!.sessions.toList();
     final currentMatchSession = sessionsList[widget.sessionIndex];
-    final playersList = (currentMatchSession.players ?? <PlayerSession>[])
-        .toList();
+    final playersList = currentMatchSession.players.toList();
 
     playersList.removeAt(playerIndexInList);
 
@@ -279,7 +278,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
 
     final sessionsList = _game!.sessions.toList();
     final currentMatch = sessionsList[widget.sessionIndex];
-    final playersList = (currentMatch.players ?? <PlayerSession>[]).toList();
+    final playersList = currentMatch.players.toList();
 
     final targetPlayer = playersList[playerIdx];
     final updatedScores = targetPlayer.scores.toList();
@@ -370,7 +369,7 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
     }
 
     final currentMatchSession = _game!.sessions[widget.sessionIndex];
-    final basePlayers = currentMatchSession.players ?? <PlayerSession>[];
+    final basePlayers = currentMatchSession.players;
     final sessionName = currentMatchSession.name?.isEmpty ?? true ? AppLocalizations.of(context)!.indexedSession(widget.sessionIndex + 1) : currentMatchSession.name!;
     int? topPlayerIndex;
 
