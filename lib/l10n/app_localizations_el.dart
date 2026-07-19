@@ -252,4 +252,13 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get whoWins => 'Ποιός κερδίζει;';
+
+  @override
+  String get theme => 'Θέμα';
+
+  @override
+  String get light => 'Φωτεινό';
+
+  @override
+  String get dark => 'Σκοτεινό';
 }

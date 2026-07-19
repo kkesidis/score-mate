@@ -249,4 +249,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get whoWins => 'Who wins?';
+
+  @override
+  String get theme => 'Theme';
+
+  @override
+  String get light => 'Light';
+
+  @override
+  String get dark => 'Dark';
 }

@@ -73,5 +73,8 @@
   "couldNotFindGame": "",
   "chooseColor": "Choose color",
   "sessionOptions": "Session options",
-  "whoWins": "Who wins?"
+  "whoWins": "Who wins?",
+  "theme": "Theme",
+  "light": "Light",
+  "dark": "Dark"
 }

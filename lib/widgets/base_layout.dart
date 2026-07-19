@@ -121,7 +121,15 @@ class BaseLayout extends StatelessWidget {
               },
             ),
             SwitchListTile(
-              title: const Text('Dark Mode'),
+              title: Text(AppLocalizations.of(context)!.theme),
+              subtitle: Text(
+                darkThemeNotifier.value ? AppLocalizations.of(context)!.dark : AppLocalizations.of(context)!.light,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w400,
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5,),
+                ),
+              ),
               secondary: Icon(darkThemeNotifier.value ? Icons.dark_mode : Icons.light_mode),
               value: darkThemeNotifier.value,
               onChanged: (bool newValue) async {
