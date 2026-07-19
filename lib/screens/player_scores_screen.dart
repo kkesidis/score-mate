@@ -379,9 +379,9 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
         .toList();
 
     if (indexedPlayers.isNotEmpty) {
-      final MapEntry<int, PlayerSession> topPlayerEntry = indexedPlayers.reduce((currentMax, next) {
-        return next.value.totalScore > currentMax.value.totalScore ? next : currentMax;
-      });
+      final MapEntry<int, PlayerSession> topPlayerEntry = _game!.highestScoreWins
+        ? indexedPlayers.reduce((currentMax, next) => next.value.totalScore > currentMax.value.totalScore ? next : currentMax)
+        : indexedPlayers.reduce((currentMin, next) => next.value.totalScore < currentMin.value.totalScore ? next : currentMin);
 
       topPlayerIndex = topPlayerEntry.key;
     }
