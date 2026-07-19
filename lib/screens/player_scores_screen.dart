@@ -230,6 +230,9 @@ class _PlayerScoresScreenState extends State<PlayerScoresScreen> {
       context: context,
       isScrollControlled: true, // Allows the sheet to resize when keyboards push up
       useRootNavigator: true,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.7, // 70% of screen height
+      ),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
